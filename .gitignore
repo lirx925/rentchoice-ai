@@ -1,0 +1,12 @@
+.env
+.streamlit/secrets.toml
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.DS_Store
+data/local_results.csv
+data/local_participants.csv
+data/local_choices.csv
+data/local_post_survey.csv
+
