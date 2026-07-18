@@ -1,5 +1,25 @@
 # 变量字典
 
+## listings（CSV 导入时）
+
+|变量|类型|含义/范围|
+|---|---|---|
+|listing_id|string|由标题、位置、面积和租金生成的稳定匿名标识|
+|title|string|源数据房源标题，最多保留100字|
+|district, subdistrict, community|string|由源位置文本拆分的区、板块、小区|
+|monthly_rent|number|从房租文本解析的月租（元）|
+|area_sqm|number|从面积文本解析的平方米数|
+|metro_distance_m|number/null|从地铁描述解析的距离；缺失时为空|
+|rental_type|category|whole / shared，由源租赁类型映射|
+|source_rental_type|string|源文件中的整租/合租类型原文|
+|bedrooms, living_rooms|number/null|从户型文本解析的室、厅数量|
+|orientation|string/null|朝向原文|
+|location_text, metro_info|string/null|源位置和地铁描述原文|
+|data_source|string|数据来源说明|
+|source_record_type|string|租赁挂牌记录（非成交记录）|
+|data_quality_flag|category|eligible / outlier_excluded|
+|commute_minutes 等未提供字段|null|源数据未提供，禁止伪造|
+
 ## participants（偏好提交时）
 
 |变量|类型|含义/范围|
@@ -48,4 +68,3 @@
 |willingness_to_use_again|integer|再次使用意愿 1–7|
 |comments|string|可选意见，最多 200 字|
 |created_at|datetime|UTC 保存时间|
-

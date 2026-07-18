@@ -7,7 +7,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.analytics import participant_summary
-from src.data_loader import load_listings
+from src.data_loader import eligible_listings, load_listings
 from src.experiment import TOTAL_ROUNDS, assign_treatment, build_choice_sets, welfare_metrics
 from src.explanations import optional_llm_explanation
 from src.recommender import score_listings
@@ -36,7 +36,7 @@ def init_state() -> None:
 
 @st.cache_data
 def listings_data() -> pd.DataFrame:
-    return load_listings()
+    return eligible_listings(load_listings())
 
 def go(stage: str) -> None:
     st.session_state.stage = stage
@@ -49,9 +49,9 @@ def top_progress(label: str, value: float) -> None:
 def welcome() -> None:
     st.title("🏠 RentChoice AI")
     st.subheader("面向大学生的可解释租房推荐与住房选择研究平台")
-    st.info("这是《人工智能与经管前沿》课程项目和研究原型。所有房源均为模拟数据，不构成真实租房、投资或消费建议。")
+    st.info("这是《人工智能与经管前沿》课程项目和研究原型。房源来自用户提供的上海租赁挂牌数据快照，并非实时房源或成交记录，不构成真实租房、投资或消费建议。")
     st.markdown("""
-本体验约需 8–12 分钟。系统不会收集姓名、电话、邮箱、身份证、学校全称或精确住址。你的偏好、选择与反应时间将使用随机匿名编号保存，仅用于课程展示和潜在学术研究设计。你可以随时关闭页面退出。
+本体验约需 8–12 分钟。原始数据共 29,006 条，系统仅从通过基础质量检查的记录中抽取实验选项。数据快照可能过时，平台未验证挂牌真实性或可租状态。系统不会收集姓名、电话、邮箱、身份证、学校全称或精确住址。你的偏好、选择与反应时间将使用随机匿名编号保存，仅用于课程展示和潜在学术研究设计。你可以随时关闭页面退出。
 
 你将先设置租房偏好，再完成 6 轮三选一任务，最后填写简短问卷。不同参与者看到的信息形式可能不同，这是随机研究设计的一部分。
 """)
@@ -68,10 +68,10 @@ def preferences_page() -> None:
     # Form/widget keys must not collide with workflow data stored in session_state.
     with st.form("preferences_form"):
         c1,c2 = st.columns(2)
-        budget_max = c1.number_input("每月最高预算（元）", 1800, 8000, 3500, 100)
-        ideal_rent = c2.number_input("最理想月租（元）", 1500, 7000, 2800, 100)
-        max_commute = c1.slider("最大可接受通勤时间（分钟）", 10, 90, 45)
-        min_area = c2.slider("最低可接受面积（㎡）", 10, 60, 22)
+        budget_max = c1.number_input("每月最高预算（元）", 500, 100000, 7000, 100)
+        ideal_rent = c2.number_input("最理想月租（元）", 500, 80000, 5500, 100)
+        max_commute = c1.slider("最大可接受通勤时间（分钟，源数据暂不含通勤）", 10, 90, 45)
+        min_area = c2.slider("最低可接受面积（㎡）", 5, 300, 35)
         rental_pref_label = st.radio("租赁类型偏好", ["接受合租", "仅接受单间或整租", "无明显偏好"], horizontal=True)
         metro_priority = st.toggle("我重视地铁便利", value=True)
         st.markdown("##### 各因素重要性（1=不重要，5=非常重要）")
@@ -100,8 +100,10 @@ def card(row: pd.Series, label: str, is_recommended: bool, group: str, explanati
     badge = "<span class='tag'>RentChoice AI 推荐</span>" if is_recommended and group != "control" else ""
     score = f"<b>推荐分数：{row['recommendation_score']:.1f}/100</b><br>" if is_recommended and group != "control" else ""
     detail = f"<div style='margin-top:10px;color:#344054'>{explanation}</div>" if explanation and is_recommended and group == "explained" else ""
-    fee = "无" if float(row["agency_fee"]) == 0 else f"{int(row['agency_fee'])}元"
-    st.markdown(f"""<div class='rent-card'><h3>房源 {label}</h3>{badge}<h4>{row['title']}</h4><div class='muted'>{row['district']} · {TYPE_LABELS[row['rental_type']]}</div><h2>¥{int(row['monthly_rent']):,}<small>/月</small></h2>{score}<p>🚇 通勤 {int(row['commute_minutes'])} 分钟 · 地铁 {int(row['metro_distance_m'])} 米<br>📐 {int(row['area_sqm'])}㎡ · {int(row['bedrooms'])} 间卧室 · {'有' if row['has_elevator'] else '无'}电梯<br>✨ 装修 {row['decoration_score']}/5 · 社区 {row['community_score']}/5 · 安全 {row['safety_score']}/5<br>💳 押金 {int(row['deposit_months'])} 个月 · 中介费 {fee}</p><p>{row['short_description']}</p>{detail}</div>""", unsafe_allow_html=True)
+    def shown(value, suffix="", digits=0):
+        return "数据未提供" if pd.isna(value) else f"{value:.{digits}f}{suffix}"
+    location = row.get("location_text") if pd.notna(row.get("location_text")) else row["district"]
+    st.markdown(f"""<div class='rent-card'><h3>房源 {label}</h3>{badge}<h4>{row['title']}</h4><div class='muted'>{location} · {TYPE_LABELS[row['rental_type']]}</div><h2>¥{int(row['monthly_rent']):,}<small>/月</small></h2>{score}<p>🚇 地铁距离：{shown(row['metro_distance_m'],' 米')}<br>📐 面积：{shown(row['area_sqm'],'㎡')} · 卧室：{shown(row['bedrooms'],'间')}<br>🧭 朝向：{row.get('orientation') if pd.notna(row.get('orientation')) else '数据未提供'}<br>🕒 通勤：数据未提供<br>✨ 装修/社区/安全：数据未提供<br>💳 押金/中介费/电梯：数据未提供</p><p>{row['short_description']}</p><small class='muted'>数据类型：租赁挂牌快照（非成交记录）</small>{detail}</div>""", unsafe_allow_html=True)
 
 def choice_page() -> None:
     r = int(st.session_state.round_number)

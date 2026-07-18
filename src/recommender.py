@@ -32,27 +32,31 @@ def component_scores(listing: pd.Series | dict, preferences: dict) -> dict[str, 
         budget = 100 - 35 * (rent - ideal) / max(maximum - ideal, 1)
     else:
         budget = 55 - 80 * (rent - maximum) / max(maximum, 1)
-    commute = 100 - (35 * x["commute_minutes"] / max(preferences["max_commute"], 1))
-    if x["commute_minutes"] > preferences["max_commute"]:
-        commute -= 40 * (x["commute_minutes"] - preferences["max_commute"]) / max(preferences["max_commute"], 1)
+    commute = np.nan
+    if pd.notna(x.get("commute_minutes")):
+        commute = 100 - (35 * x["commute_minutes"] / max(preferences["max_commute"], 1))
+        if x["commute_minutes"] > preferences["max_commute"]:
+            commute -= 40 * (x["commute_minutes"] - preferences["max_commute"]) / max(preferences["max_commute"], 1)
     area = 100 if x["area_sqm"] >= preferences["min_area"] else 100 * x["area_sqm"] / max(preferences["min_area"], 1) - 25
-    metro = 100 - x["metro_distance_m"] / 25
+    metro = 100 - x["metro_distance_m"] / 25 if pd.notna(x.get("metro_distance_m")) else np.nan
     pref = preferences["rental_type_preference"]
     rental = 100 if pref == "no_preference" else (10 if pref == "no_shared" and x["rental_type"] == "shared" else 90)
     return {
-        "budget_fit": _clamp(budget), "commute_fit": _clamp(commute),
+        "budget_fit": _clamp(budget), "commute_fit": _clamp(commute) if pd.notna(commute) else np.nan,
         "area_fit": _clamp(area), "metro_fit": _clamp(metro),
         "rental_type_fit": _clamp(rental),
-        "decoration_fit": _clamp(x["decoration_score"] * 20),
-        "community_fit": _clamp(x["community_score"] * 20),
-        "safety_fit": _clamp(x["safety_score"] * 20),
+        "decoration_fit": _clamp(x["decoration_score"] * 20) if pd.notna(x.get("decoration_score")) else np.nan,
+        "community_fit": _clamp(x["community_score"] * 20) if pd.notna(x.get("community_score")) else np.nan,
+        "safety_fit": _clamp(x["safety_score"] * 20) if pd.notna(x.get("safety_score")) else np.nan,
     }
 
 def score_listing(listing: pd.Series | dict, preferences: dict) -> tuple[float, dict[str, float]]:
     """Return deterministic recommendation score and component scores."""
     parts = component_scores(listing, preferences)
     weights = _weights(preferences)
-    final = sum(parts[key] * weights[key] for key in parts)
+    available = [key for key, value in parts.items() if pd.notna(value)]
+    denominator = sum(weights[key] for key in available) or 1
+    final = sum(parts[key] * weights[key] for key in available) / denominator
     return round(_clamp(final), 2), parts
 
 def score_listings(listings: pd.DataFrame, preferences: dict) -> pd.DataFrame:
@@ -63,4 +67,3 @@ def score_listings(listings: pd.DataFrame, preferences: dict) -> pd.DataFrame:
     for key in scored[0][1]:
         result[key] = [x[1][key] for x in scored]
     return result
-

@@ -1,23 +1,23 @@
 """Balanced rule-based explanations with an optional LLM enhancement."""
 from __future__ import annotations
 import os
+import pandas as pd
 
 LABELS = {"budget_fit":"预算", "commute_fit":"通勤", "area_fit":"面积", "metro_fit":"地铁便利", "rental_type_fit":"租赁类型", "decoration_fit":"装修", "community_fit":"社区环境", "safety_fit":"安全"}
 
 def rule_based_explanation(recommended, alternatives, preferences: dict) -> str:
     """Generate a factual Chinese explanation containing one benefit and drawback."""
     row = dict(recommended)
-    avg_commute = float(alternatives["commute_minutes"].mean())
     avg_area = float(alternatives["area_sqm"].mean())
     if row["monthly_rent"] <= preferences["budget_max"]:
         advantage = f"月租{int(row['monthly_rent'])}元，在你的预算范围内"
-    elif row["commute_minutes"] < avg_commute:
-        advantage = f"通勤比本轮其他房源平均少{round(avg_commute-row['commute_minutes'])}分钟"
+    elif pd.notna(row.get("metro_distance_m")) and row["metro_distance_m"] < alternatives["metro_distance_m"].mean():
+        advantage = f"距离地铁约{int(row['metro_distance_m'])}米，比本轮其他房源更近"
     else:
-        advantage = f"安全评分为{row['safety_score']}/5"
+        advantage = f"面积为{int(row['area_sqm'])}平方米"
     if row["area_sqm"] < avg_area:
         drawback = f"面积比本轮平均少{round(avg_area-row['area_sqm'])}平方米"
-    elif row["metro_distance_m"] > 1000:
+    elif pd.notna(row.get("metro_distance_m")) and row["metro_distance_m"] > 1000:
         drawback = f"距离地铁约{int(row['metro_distance_m'])}米"
     else:
         drawback = f"月租为{int(row['monthly_rent'])}元，仍需结合支付压力判断"
@@ -36,4 +36,3 @@ def optional_llm_explanation(recommended, alternatives, preferences: dict) -> st
         return text if 35 <= len(text) <= 150 else fallback
     except Exception:
         return fallback
-
