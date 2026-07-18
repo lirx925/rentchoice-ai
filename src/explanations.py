@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import pandas as pd
 
-LABELS = {"budget_fit":"预算", "location_fit":"目的地区域", "area_fit":"面积", "metro_fit":"地铁便利", "rental_type_fit":"租赁类型", "decoration_fit":"装修", "community_fit":"社区环境", "safety_fit":"安全"}
+LABELS = {"budget_fit":"预算", "location_fit":"目的地区域", "area_fit":"面积", "metro_fit":"地铁便利", "rental_type_fit":"租赁类型"}
 
 def rule_based_explanation(recommended, alternatives, preferences: dict) -> str:
     """Generate a factual Chinese explanation containing one benefit and drawback."""

@@ -151,7 +151,7 @@ def preferences_page() -> None:
         metro_priority = st.toggle("🚉 我重视地铁便利", value=True)
         st.markdown("##### 各因素重要性（1=不重要，5=非常重要）")
         cols = st.columns(4)
-        fields = [("租金","importance_rent"),("通勤时间","importance_commute"),("面积","importance_area"),("地铁距离","importance_metro"),("装修","importance_decoration"),("社区环境","importance_community"),("安全","importance_safety")]
+        fields = [("租金","importance_rent"),("目的地区域匹配","importance_location"),("面积","importance_area"),("地铁距离","importance_metro")]
         vals = {key: cols[i%4].slider(label,1,5,4 if i<3 else 3,key=key) for i,(label,key) in enumerate(fields)}
         prior = st.radio("是否有租房经历？", ["是", "否"], horizontal=True)
         trust = st.slider("🤝 对 AI 推荐的初始信任程度", 1, 7, 4)
@@ -388,7 +388,7 @@ def results_page() -> None:
     st.markdown("---")
     c1,c2,c3=st.columns(3); c1.metric("平均决策时间",f"{summary['avg_time']:.1f} 秒"); c2.metric("平均满意度",f"{summary['avg_satisfaction']:.1f}/7"); c3.metric("选择算法最高分房源",f"{summary['follow_rate']:.0%}")
     st.write("匿名编号：",st.session_state.participant_id); st.write("体验模式：",GROUP_LABELS[st.session_state.treatment_group])
-    names={"importance_rent":"租金","importance_commute":"通勤","importance_area":"面积","importance_metro":"地铁距离","importance_decoration":"装修","importance_community":"社区环境","importance_safety":"安全"}
+    names={"importance_rent":"租金","importance_location":"目的地区域匹配","importance_area":"面积","importance_metro":"地铁距离"}
     top=sorted(names,key=lambda k:st.session_state.preferences[k],reverse=True)[:3]
     st.success(f"你最重视的三个属性是：{'、'.join(names[k] for k in top)}。以上结果仅根据本次声明偏好和模拟选择计算，不代表真实市场中的最优选择。")
     if st.button("重新开始（不会覆盖已保存记录）"):

@@ -9,21 +9,23 @@ def _clamp(value: float) -> float:
 
 def _weights(preferences: dict) -> dict[str, float]:
     """Convert importance ratings to normalized model weights."""
+    # Accept both names during rolling deployments and for sessions that were
+    # created before commute importance was replaced by location importance.
+    location_importance = preferences.get(
+        "importance_location", preferences.get("importance_commute", 3)
+    )
     raw = {
         "budget_fit": preferences["importance_rent"],
-        "location_fit": preferences["importance_location"],
+        "location_fit": location_importance,
         "area_fit": preferences["importance_area"],
         "metro_fit": preferences["importance_metro"] if preferences["metro_priority"] else 1,
         "rental_type_fit": 3,
-        "decoration_fit": preferences["importance_decoration"],
-        "community_fit": preferences["importance_community"],
-        "safety_fit": preferences["importance_safety"],
     }
     total = sum(raw.values()) or 1
     return {key: value / total for key, value in raw.items()}
 
 def component_scores(listing: pd.Series | dict, preferences: dict) -> dict[str, float]:
-    """Calculate eight interpretable 0–100 fit components for one listing."""
+    """Calculate five interpretable 0–100 fit components for one listing."""
     x = dict(listing)
     rent, ideal, maximum = x["monthly_rent"], preferences["ideal_rent"], preferences["budget_max"]
     if rent <= ideal:
@@ -50,9 +52,6 @@ def component_scores(listing: pd.Series | dict, preferences: dict) -> dict[str, 
         "budget_fit": _clamp(budget), "location_fit": _clamp(location),
         "area_fit": _clamp(area), "metro_fit": _clamp(metro),
         "rental_type_fit": _clamp(rental),
-        "decoration_fit": _clamp(x["decoration_score"] * 20) if pd.notna(x.get("decoration_score")) else np.nan,
-        "community_fit": _clamp(x["community_score"] * 20) if pd.notna(x.get("community_score")) else np.nan,
-        "safety_fit": _clamp(x["safety_score"] * 20) if pd.notna(x.get("safety_score")) else np.nan,
     }
 
 def score_listing(listing: pd.Series | dict, preferences: dict) -> tuple[float, dict[str, float]]:

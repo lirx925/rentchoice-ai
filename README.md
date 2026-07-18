@@ -6,7 +6,7 @@ RentChoice AI 是《人工智能与经管前沿》课程期末项目：参与者
 
 - 知情同意、随机匿名 participant_id、参与者级固定分组
 - 29,006 条上海租赁挂牌快照，其中通过基础质量检查的记录进入实验抽样
-- 八维 0–100 确定性推荐、平衡解释、无 API Key 回退
+- 五维 0–100 确定性推荐、平衡解释、无 API Key 回退
 - 六轮随机顺序三选一、反应时间、满意度、信心、WTP 和代理福利损失
 - 结束问卷、个人摘要、密码管理台、图表和三表 CSV 下载
 - Supabase 优先、本地 UTF-8 CSV 自动回退、按唯一键防重复
@@ -80,7 +80,6 @@ create table if not exists participants (
  participant_id text primary key, created_at timestamptz default now(), treatment_group text not null,
  budget_max integer, ideal_rent integer, max_commute integer, destination_district text, min_area integer, rental_type_preference text,
  importance_rent integer, importance_commute integer, importance_location integer, importance_area integer, importance_metro integer,
- importance_decoration integer, importance_community integer, importance_safety integer,
  prior_rental_experience boolean, initial_ai_trust integer, participant_status text, consent boolean
 );
 create table if not exists choices (
@@ -165,4 +164,4 @@ alter table choices add column if not exists chosen_location_match numeric;
 
 ## 局限与伦理
 
-数据为第三方租赁挂牌快照，未验证真实性、时效性或可租状态，且缺少通勤、装修、社区、安全、电梯、押金和中介费；偏好和福利均为声明式代理。项目组公开分发数据或网站前，应确认数据取得方式、再利用授权和原平台条款。推荐公式无法涵盖噪音、合同风险、歧视、真实供给等因素。平台不应替代现实决策。正式研究需伦理审批、预注册、最小化收集、访问控制、保留期限、撤回机制和充分样本；不得把探索性结果包装为已证实结论。
+数据为第三方租赁挂牌快照，未验证真实性、时效性或可租状态，且缺少通勤、装修、社区、安全、电梯、押金和中介费；缺失项目不在页面询问或推荐评分中使用。偏好和福利均为声明式代理。项目组公开分发数据或网站前，应确认数据取得方式、再利用授权和原平台条款。推荐公式无法涵盖噪音、合同风险、歧视、真实供给等因素。平台不应替代现实决策。正式研究需伦理审批、预注册、最小化收集、访问控制、保留期限、撤回机制和充分样本；不得把探索性结果包装为已证实结论。
