@@ -89,7 +89,7 @@ def preferences_page() -> None:
         metro_priority = st.toggle("我重视地铁便利", value=True)
         st.markdown("##### 各因素重要性（1=不重要，5=非常重要）")
         cols = st.columns(4)
-        fields = [("租金","importance_rent"),("目的地区域匹配","importance_location"),("面积","importance_area"),("地铁距离","importance_metro"),("装修","importance_decoration"),("社区环境","importance_community"),("安全","importance_safety")]
+        fields = [("租金","importance_rent"),("目的地区域匹配","importance_location"),("面积","importance_area"),("地铁距离","importance_metro")]
         vals = {key: cols[i%4].slider(label,1,5,4 if i<3 else 3,key=key) for i,(label,key) in enumerate(fields)}
         prior = st.radio("是否有租房经历？", ["是", "否"], horizontal=True)
         trust = st.slider("对 AI 推荐的初始信任程度", 1, 7, 4)
@@ -118,7 +118,7 @@ def card(row: pd.Series, label: str, is_recommended: bool, group: str, explanati
     location = row.get("location_text") if pd.notna(row.get("location_text")) else row["district"]
     destination = st.session_state.preferences.get("destination_district", "暂不确定/不限") if st.session_state.preferences else "暂不确定/不限"
     match_label = "未指定目的地" if destination == "暂不确定/不限" else ("同区匹配" if row.get("district") == destination else "跨区")
-    st.markdown(f"""<div class='rent-card'><h3>房源 {label}</h3>{badge}<h4>{row['title']}</h4><div class='muted'>{location} · {TYPE_LABELS[row['rental_type']]}</div><h2>¥{int(row['monthly_rent']):,}<small>/月</small></h2>{score}<p>📍 目的地区域：{destination} · {match_label}<br>🚇 地铁距离：{shown(row['metro_distance_m'],' 米')}<br>📐 面积：{shown(row['area_sqm'],'㎡')} · 卧室：{shown(row['bedrooms'],'间')}<br>🧭 朝向：{row.get('orientation') if pd.notna(row.get('orientation')) else '数据未提供'}<br>✨ 装修/社区/安全：数据未提供<br>💳 押金/中介费/电梯：数据未提供</p><p>{row['short_description']}</p><small class='muted'>位置匹配为行政区代理指标，不代表真实通勤时间</small>{detail}</div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class='rent-card'><h3>房源 {label}</h3>{badge}<h4>{row['title']}</h4><div class='muted'>{location} · {TYPE_LABELS[row['rental_type']]}</div><h2>¥{int(row['monthly_rent']):,}<small>/月</small></h2>{score}<p>📍 目的地区域：{destination} · {match_label}<br>🚇 地铁距离：{shown(row['metro_distance_m'],' 米')}<br>📐 面积：{shown(row['area_sqm'],'㎡')} · 卧室：{shown(row['bedrooms'],'间')}<br>🧭 朝向：{row.get('orientation') if pd.notna(row.get('orientation')) else '数据未提供'}</p><p>{row['short_description']}</p><small class='muted'>推荐仅依据已展示的租金、区域、面积、地铁和租赁类型；位置匹配不代表真实通勤时间</small>{detail}</div>""", unsafe_allow_html=True)
 
 def choice_page() -> None:
     r = int(st.session_state.round_number)
@@ -138,7 +138,8 @@ def choice_page() -> None:
         selected_label = st.radio("我最愿意租", labels, index=None, horizontal=True)
         satisfaction = st.slider("对这次选择的满意度",1,7,4)
         confidence = st.slider("选择信心",1,7,4)
-        wtp = st.number_input("对所选房源的最高月租支付意愿（元）",1000,10000,3000,100)
+        wtp_limit = max(30000, int(scored["monthly_rent"].max() * 1.5))
+        wtp = st.number_input("对所选房源的最高月租支付意愿（元）",1000,wtp_limit,3000,100)
         submitted = st.form_submit_button("提交本轮选择", type="primary", use_container_width=True)
     if submitted:
         if selected_label is None: st.error("请先选择房源 A、B 或 C。"); return
@@ -177,7 +178,7 @@ def results_page() -> None:
     summary=participant_summary(choices)
     c1,c2,c3=st.columns(3); c1.metric("平均决策时间",f"{summary['avg_time']:.1f} 秒"); c2.metric("平均满意度",f"{summary['avg_satisfaction']:.1f}/7"); c3.metric("选择算法最高分房源",f"{summary['follow_rate']:.0%}")
     st.write("匿名编号：",st.session_state.participant_id); st.write("体验模式：",GROUP_LABELS[st.session_state.treatment_group])
-    names={"importance_rent":"租金","importance_location":"目的地区域匹配","importance_area":"面积","importance_metro":"地铁距离","importance_decoration":"装修","importance_community":"社区环境","importance_safety":"安全"}
+    names={"importance_rent":"租金","importance_location":"目的地区域匹配","importance_area":"面积","importance_metro":"地铁距离"}
     top=sorted(names,key=lambda k:st.session_state.preferences[k],reverse=True)[:3]
     st.success(f"你最重视的三个属性是：{'、'.join(names[k] for k in top)}。以上结果仅根据本次声明偏好和模拟选择计算，不代表真实市场中的最优选择。")
     if st.button("重新开始（不会覆盖已保存记录）"):

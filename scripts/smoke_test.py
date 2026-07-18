@@ -9,7 +9,7 @@ from src.experiment import GROUPS, assign_treatment, build_choice_sets, welfare_
 from src.explanations import rule_based_explanation
 from src.recommender import score_listings
 
-PREFS={"budget_max":7000,"ideal_rent":5500,"destination_district":"浦东","min_area":35,"rental_type_preference":"no_shared","metro_priority":True,"importance_rent":5,"importance_location":5,"importance_area":4,"importance_metro":4,"importance_decoration":3,"importance_community":3,"importance_safety":5}
+PREFS={"budget_max":7000,"ideal_rent":5500,"destination_district":"浦东","min_area":35,"rental_type_preference":"no_shared","metro_priority":True,"importance_rent":5,"importance_location":5,"importance_area":4,"importance_metro":4}
 
 def main():
     listings=load_listings(); assert len(listings)>=36 and REQUIRED_COLUMNS<=set(listings)

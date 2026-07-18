@@ -32,7 +32,6 @@
 |min_area|integer|最低面积㎡，10–60|
 |rental_type_preference|category|accept_shared / no_shared / no_preference|
 |importance_rent, importance_location, importance_area, importance_metro|integer|重要性 1–5|
-|importance_decoration, importance_community, importance_safety|integer|重要性 1–5|
 |prior_rental_experience|boolean|是否有租房经历|
 |initial_ai_trust|integer|初始 AI 信任 1–7|
 |participant_status|category|本科生/研究生/实习生/已工作/其他|
