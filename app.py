@@ -153,7 +153,7 @@ def choice_page() -> None:
         st.session_state.round_number = r+1
         st.session_state.round_started_at = time.time()
         go("survey" if r == TOTAL_ROUNDS else "choice")
-
+        
 def survey_page() -> None:
     top_progress("结束问卷", .82); st.title("最后几道问题")
     control = st.session_state.treatment_group == "control"
