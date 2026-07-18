@@ -11,7 +11,7 @@ def _weights(preferences: dict) -> dict[str, float]:
     """Convert importance ratings to normalized model weights."""
     raw = {
         "budget_fit": preferences["importance_rent"],
-        "commute_fit": preferences["importance_commute"],
+        "location_fit": preferences["importance_location"],
         "area_fit": preferences["importance_area"],
         "metro_fit": preferences["importance_metro"] if preferences["metro_priority"] else 1,
         "rental_type_fit": 3,
@@ -32,17 +32,22 @@ def component_scores(listing: pd.Series | dict, preferences: dict) -> dict[str, 
         budget = 100 - 35 * (rent - ideal) / max(maximum - ideal, 1)
     else:
         budget = 55 - 80 * (rent - maximum) / max(maximum, 1)
-    commute = np.nan
-    if pd.notna(x.get("commute_minutes")):
-        commute = 100 - (35 * x["commute_minutes"] / max(preferences["max_commute"], 1))
-        if x["commute_minutes"] > preferences["max_commute"]:
-            commute -= 40 * (x["commute_minutes"] - preferences["max_commute"]) / max(preferences["max_commute"], 1)
+    destination = preferences.get("destination_district", "暂不确定/不限")
+    listing_district = x.get("district")
+    if pd.isna(listing_district):
+        location = 50
+    elif destination == "暂不确定/不限":
+        location = 50
+    elif str(listing_district) == str(destination):
+        location = 100
+    else:
+        location = 40
     area = 100 if x["area_sqm"] >= preferences["min_area"] else 100 * x["area_sqm"] / max(preferences["min_area"], 1) - 25
     metro = 100 - x["metro_distance_m"] / 25 if pd.notna(x.get("metro_distance_m")) else np.nan
     pref = preferences["rental_type_preference"]
     rental = 100 if pref == "no_preference" else (10 if pref == "no_shared" and x["rental_type"] == "shared" else 90)
     return {
-        "budget_fit": _clamp(budget), "commute_fit": _clamp(commute) if pd.notna(commute) else np.nan,
+        "budget_fit": _clamp(budget), "location_fit": _clamp(location),
         "area_fit": _clamp(area), "metro_fit": _clamp(metro),
         "rental_type_fit": _clamp(rental),
         "decoration_fit": _clamp(x["decoration_score"] * 20) if pd.notna(x.get("decoration_score")) else np.nan,

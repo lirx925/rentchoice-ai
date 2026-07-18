@@ -9,7 +9,7 @@ from src.experiment import GROUPS, assign_treatment, build_choice_sets, welfare_
 from src.explanations import rule_based_explanation
 from src.recommender import score_listings
 
-PREFS={"budget_max":3500,"ideal_rent":2800,"max_commute":45,"min_area":22,"rental_type_preference":"no_shared","metro_priority":True,"importance_rent":5,"importance_commute":5,"importance_area":4,"importance_metro":4,"importance_decoration":3,"importance_community":3,"importance_safety":5}
+PREFS={"budget_max":7000,"ideal_rent":5500,"destination_district":"浦东","min_area":35,"rental_type_preference":"no_shared","metro_priority":True,"importance_rent":5,"importance_location":5,"importance_area":4,"importance_metro":4,"importance_decoration":3,"importance_community":3,"importance_safety":5}
 
 def main():
     listings=load_listings(); assert len(listings)>=36 and REQUIRED_COLUMNS<=set(listings)
@@ -19,6 +19,12 @@ def main():
     opts=scored[scored.listing_id.isin(sets[0])]; best=opts.loc[opts.recommendation_score.idxmax()]
     chosen,best_u,loss=welfare_metrics(opts,str(opts.iloc[0].listing_id)); assert loss>=0 and best_u>=chosen
     explanation=rule_based_explanation(best,opts[opts.listing_id!=best.listing_id],PREFS); assert "优点" in explanation and "不足" in explanation
+    assert set(scored["location_fit"].unique()).issubset({40.0, 100.0})
+    same = listings.iloc[0].copy(); same["district"] = "浦东"
+    other = listings.iloc[0].copy(); other["district"] = "徐汇"
+    same_score = score_listings(pd.DataFrame([same]), PREFS).iloc[0]["location_fit"]
+    other_score = score_listings(pd.DataFrame([other]), PREFS).iloc[0]["location_fit"]
+    assert same_score == 100 and other_score == 40
     with tempfile.TemporaryDirectory() as tmp:
         old_files=storage.FILES; storage.DATA_DIR=Path(tmp); storage.FILES={k:Path(tmp)/f"{k}.csv" for k in old_files}
         storage.save_choice({"participant_id":"p","round_number":1,"chosen_listing_id":"R001"}); storage.save_choice({"participant_id":"p","round_number":1,"chosen_listing_id":"R002"})
@@ -27,4 +33,3 @@ def main():
     print("PASS: listings, scores, choice sets, groups, welfare, explanation, local idempotent storage")
 
 if __name__=="__main__": main()
-

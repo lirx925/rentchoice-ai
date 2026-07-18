@@ -7,7 +7,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from src.analytics import participant_summary
-from src.data_loader import eligible_listings, load_listings
+from src.data_loader import load_listings
 from src.experiment import TOTAL_ROUNDS, assign_treatment, build_choice_sets, welfare_metrics
 from src.explanations import optional_llm_explanation
 from src.recommender import score_listings
@@ -24,6 +24,7 @@ st.set_page_config(page_title="RentChoice AI", page_icon="🏠", layout="wide", 
 
 TYPE_LABELS = {"shared":"合租", "studio":"独立单间", "whole":"整租"}
 GROUP_LABELS = {"control":"信息浏览模式", "score_only":"智能评分模式", "explained":"解释型推荐模式"}
+SHANGHAI_DISTRICTS = ["暂不确定/不限", "浦东", "黄浦", "徐汇", "长宁", "静安", "普陀", "虹口", "杨浦", "闵行", "宝山", "嘉定", "金山", "松江", "青浦", "奉贤", "崇明"]
 
 st.markdown("""<style>
 .block-container{max-width:1100px;padding-top:2rem}.rent-card{border:1px solid #dfe5ec;border-radius:14px;padding:16px;background:#fff;min-height:390px}.tag{display:inline-block;background:#eaf2ff;color:#2457a6;padding:4px 9px;border-radius:99px;font-size:.82rem}.muted{color:#667085}.stButton>button{border-radius:9px} @media(max-width:700px){.block-container{padding:1rem}.rent-card{min-height:auto}}
@@ -36,11 +37,22 @@ def init_state() -> None:
 
 @st.cache_data
 def listings_data() -> pd.DataFrame:
-    return eligible_listings(load_listings())
+    # Keep the eligibility filter at the app boundary. This also avoids stale
+    # module-cache import failures during Streamlit Cloud hot deployments.
+    df = load_listings()
+    eligible = df[df["data_quality_flag"].eq("eligible")].copy()
+    if len(eligible) < 36:
+        raise ValueError("通过质量检查的真实房源不足36条。")
+    return eligible
 
 def go(stage: str) -> None:
     st.session_state.stage = stage
     st.rerun()
+
+
+def nullable_number(value, caster=float):
+    """Convert a listing value while preserving missing source data as None."""
+    return None if pd.isna(value) else caster(value)
 
 def top_progress(label: str, value: float) -> None:
     st.caption(f"匿名参与 · {storage_mode()}模式 · {label}")
@@ -70,13 +82,14 @@ def preferences_page() -> None:
         c1,c2 = st.columns(2)
         budget_max = c1.number_input("每月最高预算（元）", 500, 100000, 7000, 100)
         ideal_rent = c2.number_input("最理想月租（元）", 500, 80000, 5500, 100)
-        max_commute = c1.slider("最大可接受通勤时间（分钟，源数据暂不含通勤）", 10, 90, 45)
+        destination_district = c1.selectbox("主要目的地区域（不需要填写精确地址）", SHANGHAI_DISTRICTS)
         min_area = c2.slider("最低可接受面积（㎡）", 5, 300, 35)
+        st.caption("位置匹配仅比较行政区：同区100分、跨区40分、暂不确定50分，不代表真实通勤时间。")
         rental_pref_label = st.radio("租赁类型偏好", ["接受合租", "仅接受单间或整租", "无明显偏好"], horizontal=True)
         metro_priority = st.toggle("我重视地铁便利", value=True)
         st.markdown("##### 各因素重要性（1=不重要，5=非常重要）")
         cols = st.columns(4)
-        fields = [("租金","importance_rent"),("通勤时间","importance_commute"),("面积","importance_area"),("地铁距离","importance_metro"),("装修","importance_decoration"),("社区环境","importance_community"),("安全","importance_safety")]
+        fields = [("租金","importance_rent"),("目的地区域匹配","importance_location"),("面积","importance_area"),("地铁距离","importance_metro"),("装修","importance_decoration"),("社区环境","importance_community"),("安全","importance_safety")]
         vals = {key: cols[i%4].slider(label,1,5,4 if i<3 else 3,key=key) for i,(label,key) in enumerate(fields)}
         prior = st.radio("是否有租房经历？", ["是", "否"], horizontal=True)
         trust = st.slider("对 AI 推荐的初始信任程度", 1, 7, 4)
@@ -87,7 +100,7 @@ def preferences_page() -> None:
             st.error("最理想月租不能高于最高预算，请调整后重试。")
             return
         mapping = {"接受合租":"accept_shared", "仅接受单间或整租":"no_shared", "无明显偏好":"no_preference"}
-        prefs = {"budget_max":budget_max,"ideal_rent":ideal_rent,"max_commute":max_commute,"min_area":min_area,"rental_type_preference":mapping[rental_pref_label],"metro_priority":metro_priority,**vals,"prior_rental_experience":prior=="是","initial_ai_trust":trust,"participant_status":status}
+        prefs = {"budget_max":budget_max,"ideal_rent":ideal_rent,"destination_district":destination_district,"min_area":min_area,"rental_type_preference":mapping[rental_pref_label],"metro_priority":metro_priority,**vals,"prior_rental_experience":prior=="是","initial_ai_trust":trust,"participant_status":status}
         st.session_state.preferences = prefs
         st.session_state.choice_sets = build_choice_sets(listings_data(), st.session_state.participant_id)
         try:
@@ -103,7 +116,9 @@ def card(row: pd.Series, label: str, is_recommended: bool, group: str, explanati
     def shown(value, suffix="", digits=0):
         return "数据未提供" if pd.isna(value) else f"{value:.{digits}f}{suffix}"
     location = row.get("location_text") if pd.notna(row.get("location_text")) else row["district"]
-    st.markdown(f"""<div class='rent-card'><h3>房源 {label}</h3>{badge}<h4>{row['title']}</h4><div class='muted'>{location} · {TYPE_LABELS[row['rental_type']]}</div><h2>¥{int(row['monthly_rent']):,}<small>/月</small></h2>{score}<p>🚇 地铁距离：{shown(row['metro_distance_m'],' 米')}<br>📐 面积：{shown(row['area_sqm'],'㎡')} · 卧室：{shown(row['bedrooms'],'间')}<br>🧭 朝向：{row.get('orientation') if pd.notna(row.get('orientation')) else '数据未提供'}<br>🕒 通勤：数据未提供<br>✨ 装修/社区/安全：数据未提供<br>💳 押金/中介费/电梯：数据未提供</p><p>{row['short_description']}</p><small class='muted'>数据类型：租赁挂牌快照（非成交记录）</small>{detail}</div>""", unsafe_allow_html=True)
+    destination = st.session_state.preferences.get("destination_district", "暂不确定/不限") if st.session_state.preferences else "暂不确定/不限"
+    match_label = "未指定目的地" if destination == "暂不确定/不限" else ("同区匹配" if row.get("district") == destination else "跨区")
+    st.markdown(f"""<div class='rent-card'><h3>房源 {label}</h3>{badge}<h4>{row['title']}</h4><div class='muted'>{location} · {TYPE_LABELS[row['rental_type']]}</div><h2>¥{int(row['monthly_rent']):,}<small>/月</small></h2>{score}<p>📍 目的地区域：{destination} · {match_label}<br>🚇 地铁距离：{shown(row['metro_distance_m'],' 米')}<br>📐 面积：{shown(row['area_sqm'],'㎡')} · 卧室：{shown(row['bedrooms'],'间')}<br>🧭 朝向：{row.get('orientation') if pd.notna(row.get('orientation')) else '数据未提供'}<br>✨ 装修/社区/安全：数据未提供<br>💳 押金/中介费/电梯：数据未提供</p><p>{row['short_description']}</p><small class='muted'>位置匹配为行政区代理指标，不代表真实通勤时间</small>{detail}</div>""", unsafe_allow_html=True)
 
 def choice_page() -> None:
     r = int(st.session_state.round_number)
@@ -130,7 +145,7 @@ def choice_page() -> None:
         idx = labels.index(selected_label); chosen = scored.iloc[idx]
         chosen_u,best_u,loss = welfare_metrics(scored,str(chosen.listing_id))
         elapsed = round(max(0.0,time.time()-float(st.session_state.round_started_at or time.time())),2)
-        row = {"participant_id":st.session_state.participant_id,"round_number":r,"treatment_group":st.session_state.treatment_group,"option_a_id":str(scored.iloc[0].listing_id),"option_b_id":str(scored.iloc[1].listing_id),"option_c_id":str(scored.iloc[2].listing_id),"recommended_listing_id":recommended_id,"chosen_listing_id":str(chosen.listing_id),"recommendation_followed":str(chosen.listing_id)==recommended_id,"chosen_rent":int(chosen.monthly_rent),"chosen_commute":None if pd.isna(chosen.commute_minutes) else int(chosen.commute_minutes),"chosen_area":float(chosen.area_sqm),"willingness_to_pay":int(wtp),"satisfaction":int(satisfaction),"choice_confidence":int(confidence),"decision_time_seconds":elapsed,"chosen_utility":chosen_u,"best_available_utility":best_u,"welfare_loss":loss}
+        row = {"participant_id":st.session_state.participant_id,"round_number":r,"treatment_group":st.session_state.treatment_group,"option_a_id":str(scored.iloc[0].listing_id),"option_b_id":str(scored.iloc[1].listing_id),"option_c_id":str(scored.iloc[2].listing_id),"recommended_listing_id":recommended_id,"chosen_listing_id":str(chosen.listing_id),"recommendation_followed":str(chosen.listing_id)==recommended_id,"chosen_rent":nullable_number(chosen.monthly_rent, int),"chosen_commute":None,"chosen_area":nullable_number(chosen.area_sqm, float),"chosen_location_match":nullable_number(chosen.location_fit, float),"willingness_to_pay":int(wtp),"satisfaction":int(satisfaction),"choice_confidence":int(confidence),"decision_time_seconds":elapsed,"chosen_utility":chosen_u,"best_available_utility":best_u,"welfare_loss":loss}
         try: save_choice(row)
         except Exception as exc: st.error(f"本轮数据保存失败，请重试：{exc}"); return
         existing = [x for x in st.session_state.choices if x["round_number"] != r]
@@ -138,7 +153,7 @@ def choice_page() -> None:
         st.session_state.round_number = r+1
         st.session_state.round_started_at = time.time()
         go("survey" if r == TOTAL_ROUNDS else "choice")
-
+        
 def survey_page() -> None:
     top_progress("结束问卷", .82); st.title("最后几道问题")
     control = st.session_state.treatment_group == "control"
@@ -162,7 +177,7 @@ def results_page() -> None:
     summary=participant_summary(choices)
     c1,c2,c3=st.columns(3); c1.metric("平均决策时间",f"{summary['avg_time']:.1f} 秒"); c2.metric("平均满意度",f"{summary['avg_satisfaction']:.1f}/7"); c3.metric("选择算法最高分房源",f"{summary['follow_rate']:.0%}")
     st.write("匿名编号：",st.session_state.participant_id); st.write("体验模式：",GROUP_LABELS[st.session_state.treatment_group])
-    names={"importance_rent":"租金","importance_commute":"通勤","importance_area":"面积","importance_metro":"地铁距离","importance_decoration":"装修","importance_community":"社区环境","importance_safety":"安全"}
+    names={"importance_rent":"租金","importance_location":"目的地区域匹配","importance_area":"面积","importance_metro":"地铁距离","importance_decoration":"装修","importance_community":"社区环境","importance_safety":"安全"}
     top=sorted(names,key=lambda k:st.session_state.preferences[k],reverse=True)[:3]
     st.success(f"你最重视的三个属性是：{'、'.join(names[k] for k in top)}。以上结果仅根据本次声明偏好和模拟选择计算，不代表真实市场中的最优选择。")
     if st.button("重新开始（不会覆盖已保存记录）"):

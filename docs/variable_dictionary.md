@@ -28,10 +28,10 @@
 |created_at|datetime|UTC 创建时间|
 |treatment_group|category|control / score_only / explained|
 |budget_max, ideal_rent|integer|最高预算、理想月租（元）|
-|max_commute|integer|最大通勤分钟，10–90|
+|destination_district|category|主要目的地区域；上海行政区或暂不确定/不限|
 |min_area|integer|最低面积㎡，10–60|
 |rental_type_preference|category|accept_shared / no_shared / no_preference|
-|importance_rent, importance_commute, importance_area, importance_metro|integer|重要性 1–5|
+|importance_rent, importance_location, importance_area, importance_metro|integer|重要性 1–5|
 |importance_decoration, importance_community, importance_safety|integer|重要性 1–5|
 |prior_rental_experience|boolean|是否有租房经历|
 |initial_ai_trust|integer|初始 AI 信任 1–7|
@@ -49,7 +49,9 @@
 |recommended_listing_id|string|后台算法最高分房源；control 也记录|
 |chosen_listing_id|string|用户选择的房源 ID|
 |recommendation_followed|boolean|选择是否等于算法最高分|
-|chosen_rent, chosen_commute, chosen_area|number|所选房源的租金、通勤、面积|
+|chosen_rent, chosen_area|number|所选房源的租金和面积|
+|chosen_commute|null|保留兼容字段；当前真实数据不记录固定通勤时间|
+|chosen_location_match|float|所选房源的位置匹配分，40/50/100|
 |willingness_to_pay|integer|最高支付意愿，1000–10000 元|
 |satisfaction, choice_confidence|integer|满意度、信心 1–7|
 |decision_time_seconds|float|本轮非负决策秒数|

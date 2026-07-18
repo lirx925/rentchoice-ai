@@ -3,13 +3,15 @@ from __future__ import annotations
 import os
 import pandas as pd
 
-LABELS = {"budget_fit":"预算", "commute_fit":"通勤", "area_fit":"面积", "metro_fit":"地铁便利", "rental_type_fit":"租赁类型", "decoration_fit":"装修", "community_fit":"社区环境", "safety_fit":"安全"}
+LABELS = {"budget_fit":"预算", "location_fit":"目的地区域", "area_fit":"面积", "metro_fit":"地铁便利", "rental_type_fit":"租赁类型", "decoration_fit":"装修", "community_fit":"社区环境", "safety_fit":"安全"}
 
 def rule_based_explanation(recommended, alternatives, preferences: dict) -> str:
     """Generate a factual Chinese explanation containing one benefit and drawback."""
     row = dict(recommended)
     avg_area = float(alternatives["area_sqm"].mean())
-    if row["monthly_rent"] <= preferences["budget_max"]:
+    if preferences.get("destination_district") not in (None, "暂不确定/不限") and row.get("district") == preferences.get("destination_district"):
+        advantage = f"房源与目的地都位于{row['district']}"
+    elif row["monthly_rent"] <= preferences["budget_max"]:
         advantage = f"月租{int(row['monthly_rent'])}元，在你的预算范围内"
     elif pd.notna(row.get("metro_distance_m")) and row["metro_distance_m"] < alternatives["metro_distance_m"].mean():
         advantage = f"距离地铁约{int(row['metro_distance_m'])}米，比本轮其他房源更近"
