@@ -145,7 +145,15 @@ def preferences_page() -> None:
         c1,c2 = st.columns(2)
         budget_max = c1.number_input("💰 每月最高预算（元）", 500, 100000, 7000, 100)
         ideal_rent = c2.number_input("💵 最理想月租（元）", 500, 80000, 5500, 100)
-        max_commute = c1.slider("🚇 最大可接受通勤时间（分钟，源数据暂不含通勤）", 10, 90, 45)
+        destination_district = c1.selectbox(
+            "📍 主要目的地区域（不需要填写精确地址）",
+            [
+                "暂不确定/不限", "浦东", "黄浦", "徐汇", "长宁",
+                "静安", "普陀", "虹口", "杨浦", "闵行",
+                "宝山", "嘉定", "金山", "松江", "青浦",
+                "奉贤", "崇明"
+            ],
+        )
         min_area = c2.slider("📐 最低可接受面积（㎡）", 5, 300, 35)
         rental_pref_label = st.radio("🏠 租赁类型偏好", ["接受合租", "仅接受单间或整租", "无明显偏好"], horizontal=True)
         metro_priority = st.toggle("🚉 我重视地铁便利", value=True)
@@ -162,7 +170,7 @@ def preferences_page() -> None:
             st.error("最理想月租不能高于最高预算，请调整后重试。")
             return
         mapping = {"接受合租":"accept_shared", "仅接受单间或整租":"no_shared", "无明显偏好":"no_preference"}
-        prefs = {"budget_max":budget_max,"ideal_rent":ideal_rent,"max_commute":max_commute,"min_area":min_area,"rental_type_preference":mapping[rental_pref_label],"metro_priority":metro_priority,**vals,"prior_rental_experience":prior=="是","initial_ai_trust":trust,"participant_status":status}
+        prefs = {"budget_max":budget_max,"ideal_rent":ideal_rent,"destination_district":destination_district,"min_area":min_area,"rental_type_preference":mapping[rental_pref_label],"metro_priority":metro_priority,**vals,"prior_rental_experience":prior=="是","initial_ai_trust":trust,"participant_status":status}
         st.session_state.preferences = prefs
         st.session_state.choice_sets = build_choice_sets(listings_data(), st.session_state.participant_id)
         try:
@@ -277,8 +285,9 @@ def choice_page() -> None:
 
     satisfaction = star_picker(f"sat_{r}", "对这次选择的满意度", scale=7, icon="★", default=4)
     confidence = star_picker(f"conf_{r}", "选择信心", scale=7, icon="⚡", default=4)
-    wtp = st.number_input("对所选房源的最高月租支付意愿（元）", 1000, 10000, 3000, 100, key=f"wtp_{r}")
-
+    wtp_limit = max(30000, int(chosen_row.monthly_rent * 1.5))
+    wtp = st.number_input("对所选房源的最高月租支付意愿（元）", 1000, wtp_limit, 3000, 100, key=f"wtp_{r}")
+    
     c1, c2 = st.columns([1, 2])
     with c1:
         if st.button("← 换一套", key=f"back_{r}", use_container_width=True):
@@ -301,9 +310,10 @@ def choice_page() -> None:
             "chosen_listing_id": str(chosen_row.listing_id),
             "recommendation_followed": str(chosen_row.listing_id) == recommended_id,
             "chosen_rent": int(chosen_row.monthly_rent),
-            "chosen_commute": None if pd.isna(chosen_row.commute_minutes) else int(chosen_row.commute_minutes),
+            "chosen_commute": None,
             "chosen_area": float(chosen_row.area_sqm),
-            "willingness_to_pay": int(wtp),
+            "chosen_location_match": None if pd.isna(chosen_row.location_fit) else float(chosen_row.location_fit),
+            "willingness_to_pay": int(wtp),  
             "satisfaction": int(satisfaction),
             "choice_confidence": int(confidence),
             "decision_time_seconds": elapsed,
