@@ -78,8 +78,8 @@ docs/                       系统设计、研究设计、变量字典
 ```sql
 create table if not exists participants (
  participant_id text primary key, created_at timestamptz default now(), treatment_group text not null,
- budget_max integer, ideal_rent integer, max_commute integer, min_area integer, rental_type_preference text,
- importance_rent integer, importance_commute integer, importance_area integer, importance_metro integer,
+ budget_max integer, ideal_rent integer, max_commute integer, destination_district text, min_area integer, rental_type_preference text,
+ importance_rent integer, importance_commute integer, importance_location integer, importance_area integer, importance_metro integer,
  importance_decoration integer, importance_community integer, importance_safety integer,
  prior_rental_experience boolean, initial_ai_trust integer, participant_status text, consent boolean
 );
@@ -88,7 +88,7 @@ create table if not exists choices (
  option_a_id text, option_b_id text, option_c_id text, recommended_listing_id text, chosen_listing_id text,
  recommendation_followed boolean, chosen_rent integer, chosen_commute integer, chosen_area numeric,
  willingness_to_pay integer, satisfaction integer, choice_confidence integer, decision_time_seconds numeric,
- chosen_utility numeric, best_available_utility numeric, welfare_loss numeric, created_at timestamptz default now(),
+ chosen_location_match numeric, chosen_utility numeric, best_available_utility numeric, welfare_loss numeric, created_at timestamptz default now(),
  primary key (participant_id, round_number)
 );
 create table if not exists post_survey (
@@ -105,6 +105,14 @@ create policy "anon insert choices" on choices for insert to anon with check (ro
 create policy "anon update choices" on choices for update to anon using (true) with check (round_number between 1 and 6);
 create policy "anon insert survey" on post_survey for insert to anon with check (char_length(coalesce(comments,'')) <= 200);
 create policy "anon update survey" on post_survey for update to anon using (true) with check (char_length(coalesce(comments,'')) <= 200);
+```
+
+旧数据库升级到位置匹配版时，在 SQL Editor 额外运行：
+
+```sql
+alter table participants add column if not exists destination_district text;
+alter table participants add column if not exists importance_location integer;
+alter table choices add column if not exists chosen_location_match numeric;
 ```
 
 注意：管理台需要读取数据。最简单的课堂演示可在 Supabase 为三表增加 `select` policy，但这会让持有 anon key 的客户端能读取匿名原始数据。更安全的方式是使用只在 Streamlit Secrets 中保存的 service-role key，并绝不提交 GitHub。正式研究应由教师/伦理审查决定访问策略。
