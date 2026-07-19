@@ -123,7 +123,7 @@ def intro_page() -> None:
 
 def welcome() -> None:
     progress_dots(1, 12)
-    scene_heading("创建你的角色", "成为小岛的新住民", "选择发型、发色、服装、下装和随身配饰。角色设置只用于游戏展示。")
+    scene_heading("创建你的角色", "设计你的小岛形象", "选择发型、发色、服装和下装。")
     character_creator()
     st.info("房源来自上海租赁挂牌数据快照，并非实时房源或成交记录；本体验不构成真实租房建议。")
     st.caption("约 8–12 分钟 · 不收集真实姓名、电话、邮箱或精确住址 · 可随时关闭退出")
@@ -249,7 +249,6 @@ def choice_page() -> None:
 
     game_topbar(r, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
     progress_dots(r + 3, 12)
-    hud_bar(st.session_state.coins, _current_streak(), len(st.session_state.badges_earned))
     _show_pending_toast()
 
     if stage == "clear":
@@ -269,7 +268,7 @@ def choice_page() -> None:
         return
 
     title, story = ROUND_STORY.get(r, (f"第 {r} 站", "新一批房源出现了——"))
-    scene_heading(f"选择 {r} / {TOTAL_ROUNDS}", title, story)
+    st.markdown(f"<div style='text-align:center;margin:4px 0 15px'><h3 style='font-size:1.45rem;margin:0'>选择今天的房源</h3><span class='game-muted'>{story}</span></div>", unsafe_allow_html=True)
 
     if stage == "pick":
         st.markdown("<div class='scene-copy'>仔细比较，然后凭第一判断选择一扇门。</div>", unsafe_allow_html=True)
@@ -280,7 +279,7 @@ def choice_page() -> None:
                 game_card(row, label, row["listing_id"] == recommended_id, st.session_state.treatment_group, explanation, TYPE_LABELS, landlord=landlords[label], round_number=r)
                 if st.button(f"查看房源 {label}", key=f"pick_{r}_{label}", type="primary", use_container_width=True):
                     st.session_state.picked_label = label
-                    st.session_state.choice_stage = "rate"
+                    st.session_state.choice_stage = "detail"
                     st.session_state.dialogue_page = 1
                     listing_id = str(row["listing_id"])
                     if listing_id not in st.session_state.viewed_homes:
@@ -290,44 +289,33 @@ def choice_page() -> None:
                     st.rerun()
         return
 
-    # stage == "rate"
+    # Stages after choosing a card: detail first, then a separate rating page.
     idx = labels.index(st.session_state.picked_label)
     chosen_row = scored.iloc[idx]
     landlord = landlords[st.session_state.picked_label]
 
-    ai_line = explanation if (explanation and chosen_row["listing_id"] == recommended_id and st.session_state.treatment_group == "explained") else None
-    pages = [landlord["line"]] + ([ai_line] if ai_line else [])
-    page = min(st.session_state.dialogue_page, len(pages))
-    speaker = landlord["name"] if page == 1 else "AI 顾问"
-    speaker_emoji = landlord["emoji"] if page == 1 else "🏮"
-
-    st.subheader(f"房源详情 · {st.session_state.picked_label}")
-    info_col, rating_col = st.columns([1.08, .92], gap="large")
-    with info_col:
-        dialogue_box(speaker_emoji, speaker, pages[page - 1], page, len(pages))
-        if page < len(pages):
-            if st.button("▶ 继续", key=f"dlg_next_{r}"):
-                st.session_state.dialogue_page += 1
-                st.rerun()
+    listing_id = str(chosen_row.listing_id)
+    if stage == "detail":
+        st.markdown("<h3 style='text-align:center;font-size:1.45rem;margin:0 0 14px'>房源详情</h3>", unsafe_allow_html=True)
         property_detail(chosen_row, st.session_state.picked_label, r, TYPE_LABELS, landlord)
-        actions = st.columns(3)
-        listing_id = str(chosen_row.listing_id)
+        actions = st.columns([1, 1, 1.35, 1.35])
         is_favorite = listing_id in st.session_state.favorites
-        if actions[0].button("💛 已收藏" if is_favorite else "♡ 收藏", key=f"fav_{r}", use_container_width=True):
+        if actions[0].button("← 返回", key=f"drop_{r}", use_container_width=True):
+            st.session_state.choice_stage = "pick"; st.session_state.picked_label = None; st.rerun()
+        if actions[1].button("💛 已收藏" if is_favorite else "♡ 收藏", key=f"fav_{r}", use_container_width=True):
             if is_favorite: st.session_state.favorites.remove(listing_id)
             else: st.session_state.favorites.append(listing_id)
             st.rerun()
-        if actions[1].button("放弃", key=f"drop_{r}", use_container_width=True):
-            st.session_state.choice_stage = "pick"
-            st.session_state.picked_label = None
-            st.rerun()
         if actions[2].button("联系房东", key=f"contact_{r}", use_container_width=True):
-            if listing_id not in st.session_state.contacted_landlords:
-                st.session_state.contacted_landlords.append(listing_id)
-            st.toast(f"已给{landlord['name']}留言，对方会在游戏内回复。", icon="💬")
+            if listing_id not in st.session_state.contacted_landlords: st.session_state.contacted_landlords.append(listing_id)
+            st.toast(f"已给{landlord['name']}留言。", icon="💬")
+        if actions[3].button("选择它 →", key=f"choose_{r}", type="primary", use_container_width=True):
+            st.session_state.choice_stage = "rate"; st.rerun()
+        return
 
+    st.markdown(f"<div class='island-panel' style='max-width:680px;margin:20px auto'><div class='scene-number'>房源 {st.session_state.picked_label} · ¥{int(chosen_row.monthly_rent):,}/月</div><h3 style='text-align:center;font-size:1.55rem'>记录你的真实感受</h3>", unsafe_allow_html=True)
+    rating_col = st.container()
     with rating_col:
-        st.markdown("#### 这一刻，你怎么想？")
         satisfaction = star_picker(f"sat_{r}", "对这次选择的满意度", scale=7, icon="★", default=4)
         confidence = star_picker(f"conf_{r}", "选择信心", scale=7, icon="⚡", default=4)
         wtp_limit = max(30000, int(chosen_row.monthly_rent * 1.5))
@@ -335,10 +323,11 @@ def choice_page() -> None:
         c1, c2 = st.columns([1, 2])
         with c1:
             if st.button("← 换一套", key=f"back_{r}", use_container_width=True):
-                st.session_state.choice_stage = "pick"
+                st.session_state.choice_stage = "detail"
                 st.rerun()
         with c2:
             confirm = st.button("确认选择 →", key=f"confirm_{r}", type="primary", use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     if confirm:
         chosen_u, best_u, loss = welfare_metrics(scored, str(chosen_row.listing_id))

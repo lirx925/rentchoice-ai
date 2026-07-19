@@ -19,7 +19,7 @@ import streamlit.components.v1 as components
 # --------------------------------------------------------------------------
 
 GAME_CSS = """
-<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#fff8e8; --paper-2:#f3e3bd; --ink:#604a32; --muted:#86735d;
@@ -33,12 +33,11 @@ GAME_CSS = """
 .stAppViewContainer{padding-top:0!important}
 .block-container{max-width:1120px; padding-top:1.1rem; padding-bottom:4.5rem;}
 h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC',sans-serif;}
-.pxl{font-family:'Ma Shan Zheng',cursive; color:var(--ink); letter-spacing:2px;}
+.pxl{font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif; color:var(--ink); letter-spacing:2px;}
 .narrative-stage{min-height:65vh; display:flex; flex-direction:column; justify-content:center; text-align:center; animation:scenein .48s cubic-bezier(.2,.8,.2,1);}
-.island-cover{min-height:76vh;border:1.5px solid #b8a58f;border-radius:30px;overflow:hidden;background-position:center;background-size:cover;position:relative;box-shadow:0 16px 45px rgba(91,74,57,.16);display:flex;align-items:flex-start;justify-content:center;animation:oceanBreath 7s ease-in-out infinite}.island-cover:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,250,235,.02),rgba(54,85,63,.13))}.cover-copy{position:relative;z-index:2;margin-top:3.2vh;padding:18px 42px;border-radius:18px;background:linear-gradient(180deg,#b97a3f,#93572e);border:3px solid #774523;box-shadow:0 7px 0 #754421;color:#fff8e7}.cover-copy:before,.cover-copy:after{content:'🌿';position:absolute;top:14px;font-size:1.6rem}.cover-copy:before{left:-18px}.cover-copy:after{right:-18px;transform:scaleX(-1)}
+.island-cover{height:calc(100vh - 2.2rem);min-height:650px;border:0;border-radius:28px;overflow:hidden;background-position:center;background-size:cover;position:relative;box-shadow:0 16px 45px rgba(54,90,99,.18);display:flex;align-items:flex-start;justify-content:center;isolation:isolate;animation:coverReveal .7s ease-out both,oceanBreath 12s ease-in-out .7s infinite}.island-cover:before{content:'';position:absolute;inset:-8%;z-index:0;background:radial-gradient(circle at 50% 12%,rgba(255,255,232,.3),transparent 30%);animation:sunGlow 6s ease-in-out infinite}.island-cover:after{content:'';position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(255,255,238,.03) 0%,transparent 46%,rgba(22,115,153,.08) 100%);pointer-events:none}.cover-copy{position:relative;z-index:2;margin-top:clamp(36px,7vh,78px);width:min(760px,88%);text-align:center;animation:titleFloat 4.8s ease-in-out infinite}.cover-copy:after{content:'✦';position:absolute;right:8%;top:-8px;color:#fff6c4;font-size:clamp(1.1rem,2vw,1.8rem);text-shadow:0 0 14px #fff;animation:twinkle 2.4s ease-in-out infinite}
 .narrative-kicker{font-size:.78rem; letter-spacing:.22em; color:var(--accent); font-weight:700; text-transform:uppercase;}
-.narrative-title{font-family:'Ma Shan Zheng',cursive; font-size:clamp(3.2rem,7vw,5.3rem); line-height:1; margin:.08em 0 .06em; color:#fff5d9;text-shadow:0 3px #754421;}
-.narrative-subtitle{font-size:1.05rem;color:#fff5d9;line-height:1.6;max-width:620px;margin:0 auto;font-weight:700}
+.narrative-title{font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif;font-size:clamp(4.5rem,9vw,7.8rem);font-weight:900;line-height:1;margin:0;letter-spacing:.01em;filter:drop-shadow(0 8px 2px rgba(95,65,30,.2));white-space:nowrap}.title-orange{color:#ee6f37;text-shadow:-5px -5px 0 #fff8dc,5px -5px 0 #fff8dc,-5px 5px 0 #fff8dc,5px 5px 0 #fff8dc,0 7px 0 #b94e2d}.title-gold{color:#bd7f37;text-shadow:-5px -5px 0 #fff8dc,5px -5px 0 #fff8dc,-5px 5px 0 #fff8dc,5px 5px 0 #fff8dc,0 7px 0 #8a5c2e}.title-green{color:#7f963f;text-shadow:-5px -5px 0 #fff8dc,5px -5px 0 #fff8dc,-5px 5px 0 #fff8dc,5px 5px 0 #fff8dc,0 7px 0 #52692c}.narrative-subtitle{display:inline-block;margin:20px auto 0;padding:9px 42px 12px;border-radius:13px;background:linear-gradient(180deg,#c98543,#a85f2f);border:3px solid #8a4c27;box-shadow:0 6px 0 #774322,0 9px 20px rgba(75,48,23,.18);font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif;font-size:clamp(1.45rem,2.6vw,2.2rem);letter-spacing:.12em;color:#fff8e7;line-height:1.25;font-weight:800}
 .roofscape{height:160px; position:relative; margin:0 auto 1.2rem; max-width:780px; border-bottom:4px solid var(--line); overflow:hidden;}
 .roof{position:absolute; bottom:0; width:130px; height:76px; border:3px solid var(--line); background:var(--paper); transform:skewY(-2deg);}
 .roof:before{content:''; position:absolute; left:18px; top:18px; width:28px; height:36px; border:3px solid var(--line); background:var(--accent-soft);}
@@ -47,7 +46,7 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 .float-key{position:absolute; font-size:2rem; color:var(--accent); animation:float 2.8s ease-in-out infinite;}.k1{left:17%;top:13px}.k2{right:18%;top:38px;animation-delay:.8s}.k3{left:48%;top:2px;animation-delay:1.4s}
 .scene-shell{max-width:900px; margin:0 auto; animation:scenein .42s cubic-bezier(.2,.8,.2,1);}
 .journey-map{height:clamp(210px,42vh,430px);border-radius:24px;border:1.5px solid #b8a58f;background-position:center;background-size:cover;box-shadow:0 12px 34px rgba(91,74,57,.14);margin:.5rem auto 1rem;position:relative;overflow:hidden}.journey-map:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(52,76,55,.2))}
-.game-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:9px 14px;border:1px solid #dbc5a2;border-radius:18px;background:rgba(255,248,225,.94);box-shadow:0 4px 14px rgba(94,78,65,.08)}.game-brand{font-family:'Ma Shan Zheng',cursive;font-size:1.4rem;color:#7b5b34}.game-stats{display:flex;gap:8px;align-items:center}.game-stat{padding:5px 10px;border-radius:16px;background:#fff3cc;font-weight:700;font-size:.8rem}
+.game-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:9px 14px;border:1px solid #dbc5a2;border-radius:18px;background:rgba(255,248,225,.94);box-shadow:0 4px 14px rgba(94,78,65,.08)}.game-brand{font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif;font-size:1.4rem;font-weight:800;color:#7b5b34}.game-stats{display:flex;gap:8px;align-items:center}.game-stat{padding:5px 10px;border-radius:16px;background:#fff3cc;font-weight:700;font-size:.8rem}
 .creator-shell{display:grid;grid-template-columns:.9fr 1.1fr;gap:22px;max-width:980px;margin:0 auto 70px}.creator-preview{border:1.5px solid #d8bc91;border-radius:24px;background:#fff5dc;padding:14px;box-shadow:0 10px 25px rgba(92,65,38,.12)}.creator-preview img{display:block;width:100%;max-height:54vh;object-fit:contain;border-radius:18px}.creator-controls{border:1.5px solid #e3cfad;border-radius:24px;background:#fffaf0;padding:20px}.creator-section{padding:11px 0;border-bottom:1px dashed #e1cba9}.creator-section:last-child{border-bottom:0}.creator-label{font-weight:800;margin-bottom:7px;color:#76583a}.accessory-badge{text-align:center;font-size:2rem;padding:8px;margin-top:8px;border-radius:16px;background:#fff0c9}
 .st-key-avatar_preview{border:1.5px solid #d8bc91;border-radius:24px;background:#fff5dc;padding:14px;box-shadow:0 10px 25px rgba(92,65,38,.12)}.st-key-avatar_preview img{max-height:52vh;object-fit:contain;border-radius:18px}
 .st-key-avatar_preview{position:relative}.st-key-avatar_preview .accessory-badge{position:absolute;right:22px;top:22px;z-index:3;min-width:82px;box-shadow:0 5px 14px rgba(92,65,38,.12)}
@@ -57,12 +56,12 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 .day-route{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0 16px}.day-node{width:48px;height:48px;border:2px solid #d1b687;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff5d8;font-weight:800;color:#9a7d57}.day-node.done{background:#88a557;color:white;border-color:#78964b}.day-node.now{background:#f5bd52;color:#65471f;border-color:#d89a35;transform:scale(1.12);box-shadow:0 0 0 5px rgba(245,189,82,.2)}
 .day-summary{display:grid;grid-template-columns:.75fr 1.5fr .75fr;gap:16px;max-width:1000px;margin:10px auto 18px}.summary-card{border:1.5px solid #dec7a2;border-radius:20px;background:#fffaf0;padding:18px;box-shadow:0 7px 18px rgba(94,68,38,.08)}.summary-card h4{margin:0 0 12px}.summary-line{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px dashed #e5d3b6}.summary-line:last-child{border-bottom:0}.reward-number{font-size:2rem;color:var(--accent);font-weight:800;text-align:center}
 .scene-number{text-align:center; color:var(--accent); font-size:.78rem; font-weight:700; letter-spacing:.18em; margin-bottom:.45rem;}
-.scene-title{text-align:center; font-family:'Ma Shan Zheng',cursive; font-size:clamp(2.15rem,5vw,3.5rem); margin:.05rem 0 .35rem;}
+.scene-title{text-align:center;font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif;font-weight:800;font-size:clamp(2.15rem,5vw,3.5rem);margin:.05rem 0 .35rem;}
 .scene-copy{text-align:center; color:var(--muted); font-size:.98rem; line-height:1.65; max-width:720px; margin:0 auto .8rem;}
 .progress-dots{position:fixed;z-index:999;left:50%;bottom:14px;transform:translateX(-50%);display:flex;justify-content:center;gap:9px;margin:0;padding:9px 16px;background:rgba(251,250,246,.94);border:1px solid #d5cec5;border-radius:999px;box-shadow:0 4px 18px rgba(94,78,65,.12);backdrop-filter:blur(8px)}
 .progress-dot{width:11px;height:11px;border:1.5px solid var(--line);border-radius:50%;background:transparent;transition:transform .25s ease,background .25s ease}.progress-dot.done{background:#b9ada2;border-color:#b9ada2}.progress-dot.now{background:var(--accent);border-color:var(--accent);transform:scale(1.28)}
 .st-key-back_nav{position:fixed;left:18px;bottom:12px;z-index:1001;width:108px}.st-key-back_nav button{min-height:2.35rem!important;background:rgba(251,250,246,.96)!important;box-shadow:0 4px 14px rgba(94,78,65,.12)!important}
-.st-key-cover_action{position:relative;z-index:5;width:min(340px,74vw);margin:-185px auto 82px}.st-key-cover_action button{font-size:1.08rem!important;min-height:3.15rem!important}.st-key-cover_settings{position:fixed;left:22px;top:20px;z-index:1002;width:110px}
+.st-key-cover_action{position:relative;z-index:5;width:min(390px,76vw);margin:-43vh auto 0;transform:translateY(-50%)}.st-key-cover_action button{min-height:4.65rem!important;border-radius:999px!important;font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif!important;font-size:clamp(1.7rem,2.6vw,2.25rem)!important;font-weight:800!important;letter-spacing:.08em!important;border-width:3px!important;box-shadow:0 7px 0 rgba(102,68,31,.3),0 12px 24px rgba(57,74,36,.18)!important}.st-key-cover_action button:hover{transform:translateY(-4px) scale(1.025)!important}.st-key-cover_action button[kind="primary"]{background:linear-gradient(180deg,#ffd986,#f3b94e)!important;color:#68451f!important;border-color:#f5e2a9!important}.st-key-cover_action button[kind="secondary"]{background:linear-gradient(180deg,#9eb35c,#7f9945)!important;color:#fffdf1!important;border-color:#d7e4a4!important}.st-key-cover_action [data-testid="stVerticalBlock"]{gap:1.15rem}.st-key-cover_settings{position:fixed;left:22px;top:20px;z-index:1002;width:120px}.st-key-cover_settings button{font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif!important;font-size:1.15rem!important;font-weight:800!important;background:rgba(176,111,51,.9)!important;color:#fff8e7!important;border:2px solid #f3d29c!important}
 .island-panel{border:1.5px solid #d6bd91;border-radius:24px;background:rgba(255,250,235,.94);padding:18px;box-shadow:0 9px 24px rgba(96,74,50,.12)}
 .community-hero{height:clamp(190px,34vh,360px);border-radius:22px;background-size:cover;background-position:center;border:1.5px solid #cdb184;position:relative;overflow:hidden}.community-hero .label{position:absolute;left:18px;bottom:18px;background:rgba(255,248,226,.92);padding:10px 18px;border-radius:16px;font-weight:800;box-shadow:0 5px 15px rgba(70,55,35,.15)}
 .detail-art{height:clamp(230px,43vh,470px);border-radius:24px;background-size:cover;background-position:center;border:1.5px solid #cdb184;box-shadow:0 10px 28px rgba(75,55,35,.13)}
@@ -120,13 +119,28 @@ button[kind="primary"]{background:var(--accent)!important;color:#fffaf5!importan
 button[kind="secondary"]{background:#fffefa!important;border-color:#b5a99d!important;color:var(--ink)!important}
 .stProgress>div>div>div>div{background:var(--accent)}
 @media(min-width:900px) and (max-height:820px){.block-container{padding-top:.55rem}.roofscape{height:112px;margin-bottom:.4rem}.narrative-stage{min-height:57vh}.island-cover{min-height:68vh}.cover-copy{padding:18px 38px}.narrative-title{font-size:5.4rem}.scene-title{font-size:2.55rem}.scene-copy{margin-bottom:.45rem}.room-art{height:105px}.game-card{min-height:260px;padding:10px 13px}.game-card p{margin:.3rem 0!important;line-height:1.45!important}.hud-row{margin-bottom:7px}.story-box{padding:9px 14px}}
-@media(max-width:700px){.block-container{padding-top:.7rem}.narrative-stage{min-height:72vh}.roofscape{height:120px}.narrative-title{font-size:4.2rem}.game-card{min-height:0}.progress-dots{bottom:8px}.creator-shell,.day-summary{grid-template-columns:1fr}.creator-preview img{max-height:45vh}.game-topbar{align-items:flex-start}.game-stats{flex-wrap:wrap;justify-content:flex-end}.day-summary{margin-bottom:80px}}
+@media(max-width:700px){.block-container{padding-top:.45rem}.island-cover{height:calc(100vh - .9rem);min-height:600px;border-radius:20px;background-position:center}.cover-copy{margin-top:12vh;width:96%}.narrative-title{font-size:clamp(3.6rem,18vw,5.2rem)}.narrative-subtitle{margin-top:16px;padding:8px 24px 10px;font-size:1.45rem}.st-key-cover_action{width:min(340px,78vw);margin:-39vh auto 0}.st-key-cover_action button{min-height:4.1rem!important;font-size:1.65rem!important}.st-key-cover_settings{left:12px;top:12px;width:98px}.narrative-stage{min-height:72vh}.roofscape{height:120px}.game-card{min-height:0}.progress-dots{bottom:8px}.creator-shell,.day-summary{grid-template-columns:1fr}.creator-preview img{max-height:45vh}.game-topbar{align-items:flex-start}.game-stats{flex-wrap:wrap;justify-content:flex-end}.day-summary{margin-bottom:80px}}
 @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
 @keyframes popin{ from{opacity:0; transform:scale(.85);} to{opacity:1; transform:scale(1);} }
 @keyframes doorpop{ from{opacity:0; transform:scale(.9) translateY(6px);} to{opacity:1; transform:scale(1) translateY(0);} }
 @keyframes float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-9px) rotate(5deg)}}
 @keyframes scenein{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
-@keyframes oceanBreath{0%,100%{background-size:100% auto}50%{background-size:103% auto}}
+@keyframes coverReveal{from{opacity:0;transform:scale(1.015)}to{opacity:1;transform:scale(1)}}
+@keyframes oceanBreath{0%,100%{background-size:cover;background-position:50% 50%}50%{background-size:auto 104%;background-position:50% 51%}}
+@keyframes titleFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes sunGlow{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.04)}}
+@keyframes twinkle{0%,100%{opacity:.35;transform:scale(.75) rotate(0)}50%{opacity:1;transform:scale(1.2) rotate(18deg)}}
+/* 2026-07 cover and housing-flow refinements */
+.island-cover{width:100%;height:auto;aspect-ratio:4/3;min-height:0;background-size:100% 100%;animation:coverReveal .7s ease-out both}
+.st-key-cover_action{margin:-27% auto 0;transform:none}
+.game-topbar{height:58px;margin:0 0 12px;padding:0;border:0;background:transparent;box-shadow:none}
+.game-location{position:fixed;z-index:990;left:20px;top:16px;padding:8px 14px;border:1px solid #dbc5a2;border-radius:15px;background:rgba(255,248,225,.94);box-shadow:0 4px 14px rgba(94,78,65,.08);font-size:.82rem;line-height:1.35}.game-location b{font-size:1rem}
+.game-stats{position:fixed;z-index:990;right:20px;top:16px;display:flex;gap:7px;align-items:center}.game-stat{padding:7px 11px;border:1px solid #e1c99d;border-radius:16px;background:rgba(255,243,204,.94);font-size:.78rem;box-shadow:0 4px 12px rgba(94,78,65,.07)}
+.game-brand{position:fixed;z-index:989;right:22px;bottom:18px;font-size:.92rem;background:rgba(255,248,225,.92);border:1px solid #d8bc8c;border-radius:14px;padding:7px 11px;box-shadow:0 4px 12px rgba(94,78,65,.1)}
+.game-card{padding:18px;min-height:270px}.game-card h4{font-size:1rem!important;line-height:1.45}
+.property-detail-shell{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;padding:22px;border:1.5px solid #dec8a4;border-radius:25px;background:#fff8e9;box-shadow:0 10px 28px rgba(75,55,35,.1)}
+.property-detail-shell .detail-art{height:auto;min-height:390px;border-radius:20px;box-shadow:none}.property-copy{padding:4px 5px}.property-copy h2{font-size:1.55rem;margin:6px 0 3px}.property-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:16px 0}.property-meta span{padding:8px 10px;border-radius:11px;background:#f7edd7;font-size:.82rem}.property-review{border-top:1px dashed #d7be96;margin-top:14px;padding-top:12px;line-height:1.75}
+@media(max-width:700px){.island-cover{height:auto;min-height:0;aspect-ratio:4/3;background-size:100% 100%;animation:coverReveal .7s ease-out both}.cover-copy{margin-top:8%}.st-key-cover_action{margin:-27% auto 0;transform:none}.game-location{position:relative;left:auto;top:auto;display:inline-block}.game-stats{position:relative;right:auto;top:auto;justify-content:flex-end}.game-brand{right:12px;bottom:72px}.property-detail-shell{grid-template-columns:1fr;padding:14px}.property-detail-shell .detail-art{min-height:260px}}
 </style>
 """
 
@@ -201,14 +215,14 @@ def _asset_data_url(path: str) -> str:
 
 
 def title_scene() -> None:
-    """Render the opening cover using the project-bound image2 asset."""
-    cover = _asset_data_url("assets/image2/rent-island-cover-v1.png")
+    """Render the centered opening cover with code-rendered Chinese text."""
+    cover = _asset_data_url("assets/image2/rent-island-cover-v2.png")
     st.markdown(
         f"""
         <div class="island-cover" style="background-image:url('{cover}')">
           <div class="cover-copy">
-            <div class="narrative-title">租房小岛</div>
-            <div class="narrative-subtitle">找到你的理想小窝</div>
+            <div class="narrative-title"><span class="title-orange">租</span><span class="title-gold">房</span><span class="title-green">小岛</span></div>
+            <div class="narrative-subtitle">找到你理想的小窝</div>
           </div>
         </div>
         """,
@@ -269,11 +283,6 @@ def character_creator() -> dict:
     with preview:
         with st.container(key="avatar_preview"):
             st.image(avatar_asset(st.session_state.avatar_hair, st.session_state.avatar_hair_color), use_container_width=True)
-            icon, accessory_name = ACCESSORY_OPTIONS[st.session_state.avatar_accessory]
-            st.markdown(
-                f"<div class='accessory-badge'>{icon}<br><small>{accessory_name}</small></div>",
-                unsafe_allow_html=True,
-            )
     with controls:
         st.markdown("#### 创建你的角色")
         st.session_state.player_name = st.text_input("起个名字", value=st.session_state.player_name, max_chars=16)
@@ -301,12 +310,6 @@ def character_creator() -> dict:
             if col.button(label, key=f"bottom_{key}", type="primary" if st.session_state.avatar_bottom == key else "secondary", use_container_width=True):
                 st.session_state.avatar_bottom = key
                 st.rerun()
-        st.markdown("<div class='creator-label'>选择配饰</div>", unsafe_allow_html=True)
-        accessory_cols = st.columns(4)
-        for col, (key, (icon, label)) in zip(accessory_cols, ACCESSORY_OPTIONS.items()):
-            if col.button(icon, key=f"accessory_{key}", help=label, type="primary" if st.session_state.avatar_accessory == key else "secondary", use_container_width=True):
-                st.session_state.avatar_accessory = key
-                st.rerun()
     return {
         "hair": st.session_state.avatar_hair,
         "hair_color": st.session_state.avatar_hair_color,
@@ -318,11 +321,11 @@ def character_creator() -> dict:
 
 
 def game_topbar(day: int, total_days: int, coins: int, player_name: str, accessory: str) -> None:
-    icon = ACCESSORY_OPTIONS.get(accessory, ("👜", ""))[0]
+    community = ROUND_STORY.get(day, (f"第 {day} 天", ""))[0]
     st.markdown(
-        f"""<div class='game-topbar'><div class='game-brand'>🏝️ 租房小岛</div>
-        <div class='game-stats'><span class='game-stat'>第 {day}/{total_days} 天</span>
-        <span class='game-stat'>🪙 {coins}</span><span class='game-stat'>{icon} {player_name}</span></div></div>""",
+        f"""<div class='game-topbar'><div class='game-location'><b>{community}</b><br>第 {day}/{total_days} 天</div>
+        <div class='game-stats'><span class='game-stat'>🪙 {coins}</span><span class='game-stat'>🏅 {len(st.session_state.get('badges_earned', []))}</span><span class='game-stat'>👤 {player_name}</span></div>
+        <div class='game-brand'>🏝️ 租房小岛</div></div>""",
         unsafe_allow_html=True,
     )
 
@@ -600,8 +603,6 @@ def game_card(row: pd.Series, label: str, is_recommended: bool, group: str, expl
 
     location = row.get("location_text") if pd.notna(row.get("location_text")) else row["district"]
     lock_note = "<div class='game-muted' style='color:var(--coral);'>🚶 走到门口才能敲门哦</div>" if locked else ""
-    art_name = COMMUNITY_ASSETS.get(round_number, COMMUNITY_ASSETS[1])
-    room_art = _asset_data_url(f"assets/image2/{art_name}")
     facilities = ["Wi-Fi", "厨房"]
     if float(row.get("area_sqm", 0) or 0) >= 35: facilities.append("阳台")
     if str(row.get("orientation", "")) in {"南", "东南", "南北"}: facilities.append("采光佳")
@@ -610,7 +611,6 @@ def game_card(row: pd.Series, label: str, is_recommended: bool, group: str, expl
     con = "租金需要仔细规划" if float(row.get("monthly_rent", 0) or 0) > 6000 else "离核心商业区可能较远"
     html = f"""
     <div class="game-card {'recommended' if highlight else ''} {'locked' if locked else ''}">
-      <div class="room-art" style="background-image:url('{room_art}')" role="img" aria-label="房源 {label} 室内插画"></div>
       <div class="pxl" style="font-size:.68rem;">房源 {label}</div>
       {badge}
       {landlord_tag}
@@ -633,19 +633,20 @@ def game_card(row: pd.Series, label: str, is_recommended: bool, group: str, expl
 
 
 def property_detail(row: pd.Series, label: str, day: int, type_labels: dict, landlord: dict) -> None:
-    art = _asset_data_url(f"assets/image2/{COMMUNITY_ASSETS.get(day, COMMUNITY_ASSETS[1])}")
+    room_assets = {1:"living-sage-v1.png",2:"bedroom-cream-v1.png",3:"studio-blue-v1.png",4:"living-sage-v1.png",5:"bedroom-cream-v1.png",6:"studio-blue-v1.png"}
+    art = _asset_data_url(f"assets/image2/{room_assets.get(day, 'living-sage-v1.png')}")
     location = row.get("location_text") if pd.notna(row.get("location_text")) else row["district"]
     area = float(row.get("area_sqm", 0) or 0)
     rent = int(row.get("monthly_rent", 0) or 0)
     suitable = "喜欢安静、自然与独处的人" if day in {1,2,5} else "重视便利、邻里与城市生活的人"
     unsuitable = "追求高密度商业与夜生活的人" if day in {1,2,5} else "非常在意绝对安静环境的人"
     layout = f"{int(row.get('bedrooms', 0) or 0)}室 · {type_labels.get(row.get('rental_type'), '住宅')}"
-    st.markdown(f"<div class='detail-art' style=\"background-image:url('{art}')\"></div>", unsafe_allow_html=True)
     st.markdown(
-        f"""<div class='island-panel' style='margin-top:12px'><h2>{row['title']}</h2>
-        <div class='game-price'>¥{rent:,}/月</div><p>📍 {location}<br>📐 {area:.0f}㎡　🏠 {layout}<br>🚇 距地铁 {float(row.get('metro_distance_m',0) or 0):.0f} 米</p>
-        <hr><h4>生活评价</h4><p>✅ 适合：{suitable}<br>🌙 不适合：{unsuitable}</p>
-        <p class='game-muted'>{landlord['emoji']} {landlord['name']}：{landlord['line']}</p></div>""",
+        f"""<div class='property-detail-shell'><div class='detail-art' style=\"background-image:url('{art}')\"></div>
+        <div class='property-copy'><div class='pxl'>房源 {label}</div><h2>{row['title']}</h2><p class='game-muted'>📍 {location} · {type_labels.get(row.get('rental_type'), '住宅')}</p>
+        <div class='game-price'>¥{rent:,}<small>/月</small></div>
+        <div class='property-meta'><span>📐 {area:.0f}㎡</span><span>🏠 {layout}</span><span>🚇 地铁 {float(row.get('metro_distance_m',0) or 0):.0f}米</span><span>🧭 {row.get('orientation') if pd.notna(row.get('orientation')) else '朝向未提供'}</span></div>
+        <div class='property-review'><b>房源描述</b><br>{row.get('short_description','')}<br><span class='game-muted'>✅ 适合：{suitable}<br>🌙 不适合：{unsuitable}<br>{landlord['emoji']} {landlord['name']}：{landlord['line']}</span></div></div></div>""",
         unsafe_allow_html=True,
     )
 
