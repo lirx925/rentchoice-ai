@@ -22,7 +22,7 @@ from src.game_ui import (
     character_creator, game_topbar, day_route, day_summary_card, character_identity_card,
     star_picker, game_card, confetti_burst, ROUND_STORY, landlord_for,
     hud_bar, dialogue_box, compute_badges, badge_toast, badge_shelf,
-    level_clear_banner, identity_card, sound_ping,
+    level_clear_banner, identity_card, sound_ping, community_hero, property_detail, nest_room,
 )
 
 load_dotenv()
@@ -32,7 +32,7 @@ try:
             __import__("os").environ[_key] = str(st.secrets[_key])
 except FileNotFoundError:
     pass
-st.set_page_config(page_title="落脚 · RentChoice AI", page_icon="🏮", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="租房小岛", page_icon="🏝️", layout="wide", initial_sidebar_state="collapsed")
 inject_game_css()
 
 TYPE_LABELS = {"shared":"合租", "studio":"独立单间", "whole":"整租"}
@@ -51,11 +51,12 @@ def init_state() -> None:
         "round_started_at": None, "choices": [], "survey_done": False,
         "choice_stage": "pick", "picked_label": None,
         # cosmetic game-layer state — never written to the saved dataset
-        "avatar": None, "avatar_hair": "wave", "avatar_outfit": "leaf",
+        "avatar": None, "avatar_hair": "short", "avatar_hair_color": "brown", "avatar_outfit": "tee", "avatar_bottom": "shorts",
         "avatar_accessory": "bag", "player_name": "小岛新住民",
         "coins": 0, "badges_earned": [], "pending_toast": [],
         "sound_on": False, "dialogue_page": 1, "clear_coins_earned": 0,
-        "stage_history": [],
+        "stage_history": [], "favorites": [], "viewed_homes": [], "contacted_landlords": [],
+        "lifestyle": "平衡生活", "home_wishes": [], "nest_theme": "ocean", "free_area": 1,
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
@@ -99,27 +100,30 @@ def _show_pending_toast() -> None:
 def cover_page() -> None:
     title_scene()
     with st.container(key="cover_action"):
-        if st.button("开始游戏 →", type="primary", use_container_width=True):
+        if st.button("开始游戏", type="primary", use_container_width=True):
             go("intro")
+        if st.button("继续游戏", use_container_width=True, disabled=st.session_state.participant_id is None):
+            go("journey" if st.session_state.preferences else "welcome")
+    with st.container(key="cover_settings"):
+        if st.button("⚙ 设置", use_container_width=True): go("settings")
 
 
 def intro_page() -> None:
     progress_dots(0, 12)
     scene_heading(
-        "序章 · 在城市里找一个位置",
-        "你会怎样选择一间房？",
-        "租金、面积、位置、地铁……每套房都像一道没有标准答案的题。接下来，"
-        "你会完成六次选择；有时算法会出现，有时它会保持沉默。",
+        "来自租房小岛的邀请函",
+        "在岛上生活六天",
+        "每天认识一个社区、查看三套房源。没有标准答案，只有越来越清晰的生活偏好。",
     )
     journey_map()
-    st.markdown("<div class='story-box' style='max-width:720px;margin:0 auto 18px;'>这里没有真正的最佳房源。我们想观察的是：当推荐介入选择，人会更快、更满意，还是更容易被一个分数带走？</div>", unsafe_allow_html=True)
+    st.markdown("<div class='story-box' style='max-width:720px;margin:0 auto 18px;'>探索小岛 → 认识社区 → 体验房子 → 发现偏好 → 建立属于自己的小窝。<br><small>房源使用租赁挂牌数据快照（非成交记录），仅用于匿名研究体验。</small></div>", unsafe_allow_html=True)
     if st.button("创建我的岛民角色 →", type="primary", use_container_width=True):
         go("welcome")
 
 
 def welcome() -> None:
     progress_dots(1, 12)
-    scene_heading("角色创建", "先成为小岛的新住民", "选择发型、服装和随身配饰。角色设置只用于游戏展示，不写入实验数据。")
+    scene_heading("创建你的角色", "成为小岛的新住民", "选择发型、发色、服装、下装和随身配饰。角色设置只用于游戏展示。")
     character_creator()
     st.info("房源来自上海租赁挂牌数据快照，并非实时房源或成交记录；本体验不构成真实租房建议。")
     st.caption("约 8–12 分钟 · 不收集真实姓名、电话、邮箱或精确住址 · 可随时关闭退出")
@@ -169,6 +173,9 @@ def preferences_detail_page() -> None:
     progress_dots(3, 12)
     scene_heading("第一幕 · 你的地图", "再排一次优先顺序", "同样的房源，不同的人会看见不同的答案。拖动滑块，表达你真正的取舍。")
     with st.form("preferences_detail_form"):
+        st.markdown("##### 你向往怎样的岛屿生活？")
+        lifestyle = st.radio("生活方式", ["安静生活", "热闹生活", "平衡生活"], horizontal=True, index=2)
+        home_wishes = st.multiselect("房屋偏好（可多选）", ["大空间", "小而温馨", "阳光充足", "有厨房", "有阳台", "可以养宠物"], default=["阳光充足", "有厨房"])
         st.markdown("##### 各因素重要性（1=不重要，5=非常重要）")
         cols = st.columns(4)
         fields = [("租金","importance_rent"),("目的地区域匹配","importance_location"),("面积","importance_area"),("地铁距离","importance_metro")]
@@ -178,6 +185,8 @@ def preferences_detail_page() -> None:
         status = st.selectbox("当前身份", ["本科生", "研究生", "实习生", "已工作", "其他"])
         submitted = st.form_submit_button("背好包，出发 →", type="primary", use_container_width=True)
     if submitted:
+        st.session_state.lifestyle = lifestyle
+        st.session_state.home_wishes = home_wishes
         prefs = {**st.session_state.preference_draft, **vals, "prior_rental_experience":prior=="是", "initial_ai_trust":trust, "participant_status":status}
         st.session_state.preferences = prefs
         st.session_state.choice_sets = build_choice_sets(listings_data(), st.session_state.participant_id)
@@ -216,7 +225,7 @@ def journey_page() -> None:
     day_route(r, TOTAL_ROUNDS)
     title, story = ROUND_STORY.get(r, (f"第 {r} 站", "新的房源正在等待你。"))
     scene_heading(f"第 {r} 天 · 我的租房之旅", title, story)
-    journey_map()
+    community_hero(r, title, story)
     st.markdown(
         f"<div class='story-box' style='max-width:760px;margin:0 auto 12px;text-align:center;'>今日目标：查看 3 套房源，完成 1 次选择，并记录你的真实感受。</div>",
         unsafe_allow_html=True,
@@ -225,6 +234,7 @@ def journey_page() -> None:
         st.session_state.round_started_at = time.time()
         st.session_state.choice_stage = "pick"
         go("choice")
+    render_bottom_navigation("map")
 
 
 def choice_page() -> None:
@@ -255,7 +265,7 @@ def choice_page() -> None:
             st.session_state.choice_stage = "pick"
             st.session_state.picked_label = None
             st.session_state.dialogue_page = 1
-            go("survey" if r == TOTAL_ROUNDS else "journey")
+            go("free_explore" if r == TOTAL_ROUNDS else "journey")
         return
 
     title, story = ROUND_STORY.get(r, (f"第 {r} 站", "新一批房源出现了——"))
@@ -267,11 +277,14 @@ def choice_page() -> None:
         for i, (_, row) in enumerate(scored.iterrows()):
             label = labels[i]
             with cols[i]:
-                game_card(row, label, row["listing_id"] == recommended_id, st.session_state.treatment_group, explanation, TYPE_LABELS, landlord=landlords[label])
-                if st.button(f"选择 {label} →", key=f"pick_{r}_{label}", type="primary", use_container_width=True):
+                game_card(row, label, row["listing_id"] == recommended_id, st.session_state.treatment_group, explanation, TYPE_LABELS, landlord=landlords[label], round_number=r)
+                if st.button(f"查看房源 {label}", key=f"pick_{r}_{label}", type="primary", use_container_width=True):
                     st.session_state.picked_label = label
                     st.session_state.choice_stage = "rate"
                     st.session_state.dialogue_page = 1
+                    listing_id = str(row["listing_id"])
+                    if listing_id not in st.session_state.viewed_homes:
+                        st.session_state.viewed_homes.append(listing_id)
                     if st.session_state.sound_on:
                         sound_ping("knock")
                     st.rerun()
@@ -288,7 +301,7 @@ def choice_page() -> None:
     speaker = landlord["name"] if page == 1 else "AI 顾问"
     speaker_emoji = landlord["emoji"] if page == 1 else "🏮"
 
-    st.subheader(f"你敲开了房源 {st.session_state.picked_label} 的门")
+    st.subheader(f"房源详情 · {st.session_state.picked_label}")
     info_col, rating_col = st.columns([1.08, .92], gap="large")
     with info_col:
         dialogue_box(speaker_emoji, speaker, pages[page - 1], page, len(pages))
@@ -296,11 +309,22 @@ def choice_page() -> None:
             if st.button("▶ 继续", key=f"dlg_next_{r}"):
                 st.session_state.dialogue_page += 1
                 st.rerun()
-        game_card(
-            chosen_row, st.session_state.picked_label,
-            chosen_row["listing_id"] == recommended_id,
-            st.session_state.treatment_group, None, TYPE_LABELS, landlord=landlord,
-        )
+        property_detail(chosen_row, st.session_state.picked_label, r, TYPE_LABELS, landlord)
+        actions = st.columns(3)
+        listing_id = str(chosen_row.listing_id)
+        is_favorite = listing_id in st.session_state.favorites
+        if actions[0].button("💛 已收藏" if is_favorite else "♡ 收藏", key=f"fav_{r}", use_container_width=True):
+            if is_favorite: st.session_state.favorites.remove(listing_id)
+            else: st.session_state.favorites.append(listing_id)
+            st.rerun()
+        if actions[1].button("放弃", key=f"drop_{r}", use_container_width=True):
+            st.session_state.choice_stage = "pick"
+            st.session_state.picked_label = None
+            st.rerun()
+        if actions[2].button("联系房东", key=f"contact_{r}", use_container_width=True):
+            if listing_id not in st.session_state.contacted_landlords:
+                st.session_state.contacted_landlords.append(listing_id)
+            st.toast(f"已给{landlord['name']}留言，对方会在游戏内回复。", icon="💬")
 
     with rating_col:
         st.markdown("#### 这一刻，你怎么想？")
@@ -377,6 +401,93 @@ def _current_streak() -> int:
     return streak
 
 
+def render_bottom_navigation(active: str) -> None:
+    """Persistent, clickable navigation for the island-life layer."""
+    with st.container(key="bottom_nav_buttons"):
+        cols = st.columns(5)
+        targets = [("🏝 地图", "journey"), ("🏠 小窝", "nest"), ("🔍 记录", "records"), ("⭐ 收藏", "favorites"), ("⚙ 设置", "settings")]
+        for col, (label, target) in zip(cols, targets):
+            if col.button(label, key=f"nav_{active}_{target}", use_container_width=True):
+                if target == "journey" and not st.session_state.preferences:
+                    target = "intro"
+                go(target)
+
+
+def free_explore_page() -> None:
+    game_topbar(TOTAL_ROUNDS, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
+    day_route(TOTAL_ROUNDS, TOTAL_ROUNDS)
+    scene_heading("第 6 天 · 自由探索", "小岛现在完全向你开放", "六轮看房已经完成。回访喜欢的社区、整理收藏，再完成最后的探索任务。")
+    areas = [(1,"海湾社区"),(2,"绿野社区"),(3,"岛中央城区"),(4,"旧街社区"),(5,"湖畔新区")]
+    cols = st.columns(5)
+    for col, (day, name) in zip(cols, areas):
+        if col.button(name, key=f"free_{day}", type="primary" if st.session_state.free_area == day else "secondary", use_container_width=True):
+            st.session_state.free_area = day; st.rerun()
+    day, name = areas[st.session_state.free_area - 1]
+    community_hero(day, name, "自由回访：这里不会新增实验选择，可以安心查看与回忆。")
+    c1, c2, c3 = st.columns(3)
+    c1.metric("看过的房子", len(st.session_state.viewed_homes))
+    c2.metric("收藏房源", len(st.session_state.favorites))
+    c3.metric("联系过的房东", len(st.session_state.contacted_landlords))
+    st.markdown(f"<div class='story-box'>今日任务：✓ 完成六日看房　{'✓' if st.session_state.favorites else '○'} 收藏喜欢的房子　✓ 回访一个社区</div>", unsafe_allow_html=True)
+    if st.button("完成自由探索，生成旅程报告 →", type="primary", use_container_width=True): go("survey")
+    render_bottom_navigation("map")
+
+
+def nest_page() -> None:
+    scene_heading("我的小窝", "把房间布置成喜欢的样子", "家具切换只改变你的游戏房间，不影响实验推荐结果。")
+    themes = [("ocean","🌊 海风原木"),("green","🌿 绿野植物"),("journal","📔 暖阳手账")]
+    cols = st.columns(3)
+    for col, (key, label) in zip(cols, themes):
+        if col.button(label, key=f"theme_{key}", type="primary" if st.session_state.nest_theme == key else "secondary", use_container_width=True):
+            st.session_state.nest_theme = key; st.rerun()
+    nest_room(st.session_state.nest_theme)
+    left, right = st.columns(2)
+    with left:
+        st.markdown("#### ⭐ 收藏展示")
+        st.write(f"你已经收藏了 {len(st.session_state.favorites)} 套房源。")
+        if st.session_state.favorites: st.caption(" · ".join(st.session_state.favorites[:6]))
+    with right:
+        st.markdown("#### 📔 旅行日记")
+        st.write(f"已经走过 {len(st.session_state.choices)}/6 天，看过 {len(st.session_state.viewed_homes)} 套房子。")
+        st.caption(f"目前向往：{st.session_state.lifestyle}；喜欢：{'、'.join(st.session_state.home_wishes) or '等待发现'}")
+    render_bottom_navigation("nest")
+
+
+def records_page() -> None:
+    scene_heading("看房记录", "六日旅程手账", "看过的房子、满意度和生活评价都留在这里。")
+    if not st.session_state.choices:
+        st.info("还没有完成的看房记录。先去小岛地图开始第一天吧。")
+    for row in sorted(st.session_state.choices, key=lambda x: x["round_number"]):
+        st.markdown(f"<div class='record-card'><b>第 {row['round_number']} 天 · {ROUND_STORY[row['round_number']][0]}</b><br>房源 {row['chosen_listing_id']}　¥{int(row['chosen_rent']):,}/月　{float(row['chosen_area']):.0f}㎡<br><small>满意度 {'★' * min(5, round(row['satisfaction']/1.4))}　选择信心 {row['choice_confidence']}/7</small></div>", unsafe_allow_html=True)
+    render_bottom_navigation("records")
+
+
+def favorites_page() -> None:
+    scene_heading("我的收藏", "把心动的小窝放在一起", "收藏不会自动成为最终选择，你可以随时添加或移除。")
+    if not st.session_state.favorites:
+        st.info("收藏夹还是空的。在房源详情页点击“♡ 收藏”即可加入。")
+    else:
+        df = listings_data().set_index("listing_id")
+        for listing_id in list(st.session_state.favorites):
+            if listing_id not in df.index: continue
+            row = df.loc[listing_id]
+            c1, c2 = st.columns([4,1])
+            c1.markdown(f"<div class='record-card'><b>{row['title']}</b><br>{row['district']} · ¥{int(row['monthly_rent']):,}/月 · {float(row['area_sqm']):.0f}㎡</div>", unsafe_allow_html=True)
+            if c2.button("移除", key=f"remove_{listing_id}", use_container_width=True):
+                st.session_state.favorites.remove(listing_id); st.rerun()
+    render_bottom_navigation("favorites")
+
+
+def settings_page() -> None:
+    scene_heading("设置", "让小岛更适合你", "这些设置只影响当前浏览器会话。")
+    with st.container():
+        st.session_state.sound_on = st.toggle("🔊 轻量音效", value=st.session_state.sound_on)
+        st.toggle("🌊 首页动态效果", value=True, disabled=True, help="水面、岛屿与按钮动效已开启")
+        st.caption("房源数据：租赁挂牌快照（非实时、非成交记录）｜不收集真实姓名、电话、邮箱或精确住址。")
+    if st.session_state.preferences: render_bottom_navigation("settings")
+    elif st.button("返回首页", use_container_width=True): go("cover")
+
+
 def survey_page() -> None:
     game_topbar(TOTAL_ROUNDS, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
     progress_dots(10, 12)
@@ -414,7 +525,7 @@ def results_page() -> None:
         st.session_state.avatar_hair, st.session_state.avatar_outfit,
         st.session_state.avatar_accessory, st.session_state.player_name,
         st.session_state.coins, st.session_state.badges_earned,
-        GROUP_LABELS[st.session_state.treatment_group],
+        GROUP_LABELS[st.session_state.treatment_group], st.session_state.avatar_hair_color,
     )
     st.markdown("##### 本次解锁的成就")
     badge_shelf(st.session_state.badges_earned)
@@ -436,6 +547,8 @@ try:
     {"cover":cover_page,"intro":intro_page,"welcome":welcome,
      "preferences_basic":preferences_basic_page,"preferences_detail":preferences_detail_page,
      "journey":journey_page,"choice":choice_page,
+     "free_explore":free_explore_page,"nest":nest_page,"records":records_page,
+     "favorites":favorites_page,"settings":settings_page,
      "survey":survey_page,"results":results_page}.get(st.session_state.stage,cover_page)()
 except Exception as exc:
     st.error(f"页面遇到异常：{exc}")

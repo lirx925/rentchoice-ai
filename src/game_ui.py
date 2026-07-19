@@ -22,11 +22,11 @@ GAME_CSS = """
 <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#fbfaf6; --paper-2:#f2eee4; --ink:#514942; --muted:#817970;
-  --line:#9b8f84; --accent:#d9684e; --accent-soft:#f7ded5; --green:#5d8b73;
+  --paper:#fff8e8; --paper-2:#f3e3bd; --ink:#604a32; --muted:#86735d;
+  --line:#c7a977; --accent:#ed9b3b; --accent-soft:#ffe1a9; --green:#78994e;
   --mist:var(--muted); --amber:var(--accent); --coral:var(--accent);
 }
-.stApp{background:var(--paper); color:var(--ink);}
+.stApp{background:radial-gradient(circle at 50% 0,#fffdf4 0,#fff8e8 55%,#f6e8c9 100%); color:var(--ink);}
 [data-testid="stHeader"]{display:none!important}
 [data-testid="stToolbar"]{display:none!important}
 [data-testid="stDecoration"]{display:none!important}
@@ -35,10 +35,10 @@ GAME_CSS = """
 h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC',sans-serif;}
 .pxl{font-family:'Ma Shan Zheng',cursive; color:var(--ink); letter-spacing:2px;}
 .narrative-stage{min-height:65vh; display:flex; flex-direction:column; justify-content:center; text-align:center; animation:scenein .48s cubic-bezier(.2,.8,.2,1);}
-.island-cover{min-height:72vh;border:1.5px solid #b8a58f;border-radius:28px;overflow:hidden;background-position:center;background-size:cover;position:relative;box-shadow:0 16px 45px rgba(91,74,57,.16);display:flex;align-items:center;justify-content:center}.island-cover:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,250,235,.08),rgba(54,85,63,.16))}.cover-copy{position:relative;z-index:2;margin-top:-5vh;padding:28px 46px;border-radius:28px;background:rgba(255,248,224,.86);backdrop-filter:blur(6px);box-shadow:0 8px 30px rgba(70,58,44,.16)}
+.island-cover{min-height:76vh;border:1.5px solid #b8a58f;border-radius:30px;overflow:hidden;background-position:center;background-size:cover;position:relative;box-shadow:0 16px 45px rgba(91,74,57,.16);display:flex;align-items:flex-start;justify-content:center;animation:oceanBreath 7s ease-in-out infinite}.island-cover:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,250,235,.02),rgba(54,85,63,.13))}.cover-copy{position:relative;z-index:2;margin-top:3.2vh;padding:18px 42px;border-radius:18px;background:linear-gradient(180deg,#b97a3f,#93572e);border:3px solid #774523;box-shadow:0 7px 0 #754421;color:#fff8e7}.cover-copy:before,.cover-copy:after{content:'🌿';position:absolute;top:14px;font-size:1.6rem}.cover-copy:before{left:-18px}.cover-copy:after{right:-18px;transform:scaleX(-1)}
 .narrative-kicker{font-size:.78rem; letter-spacing:.22em; color:var(--accent); font-weight:700; text-transform:uppercase;}
-.narrative-title{font-family:'Ma Shan Zheng',cursive; font-size:clamp(4.3rem,10vw,7.8rem); line-height:1; margin:.18em 0 .12em; color:var(--ink);}
-.narrative-subtitle{font-size:1.15rem; color:var(--muted); line-height:1.8; max-width:620px; margin:0 auto 1.6rem;}
+.narrative-title{font-family:'Ma Shan Zheng',cursive; font-size:clamp(3.2rem,7vw,5.3rem); line-height:1; margin:.08em 0 .06em; color:#fff5d9;text-shadow:0 3px #754421;}
+.narrative-subtitle{font-size:1.05rem;color:#fff5d9;line-height:1.6;max-width:620px;margin:0 auto;font-weight:700}
 .roofscape{height:160px; position:relative; margin:0 auto 1.2rem; max-width:780px; border-bottom:4px solid var(--line); overflow:hidden;}
 .roof{position:absolute; bottom:0; width:130px; height:76px; border:3px solid var(--line); background:var(--paper); transform:skewY(-2deg);}
 .roof:before{content:''; position:absolute; left:18px; top:18px; width:28px; height:36px; border:3px solid var(--line); background:var(--accent-soft);}
@@ -62,7 +62,15 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 .progress-dots{position:fixed;z-index:999;left:50%;bottom:14px;transform:translateX(-50%);display:flex;justify-content:center;gap:9px;margin:0;padding:9px 16px;background:rgba(251,250,246,.94);border:1px solid #d5cec5;border-radius:999px;box-shadow:0 4px 18px rgba(94,78,65,.12);backdrop-filter:blur(8px)}
 .progress-dot{width:11px;height:11px;border:1.5px solid var(--line);border-radius:50%;background:transparent;transition:transform .25s ease,background .25s ease}.progress-dot.done{background:#b9ada2;border-color:#b9ada2}.progress-dot.now{background:var(--accent);border-color:var(--accent);transform:scale(1.28)}
 .st-key-back_nav{position:fixed;left:18px;bottom:12px;z-index:1001;width:108px}.st-key-back_nav button{min-height:2.35rem!important;background:rgba(251,250,246,.96)!important;box-shadow:0 4px 14px rgba(94,78,65,.12)!important}
-.st-key-cover_action{position:relative;z-index:5;width:min(320px,72vw);margin:-130px auto 70px}.st-key-cover_action button{font-size:1.12rem!important;min-height:3.4rem!important;background:#f4bd58!important;border-color:#d79a34!important;color:#5d472b!important;box-shadow:0 6px 0 #dca54c!important}
+.st-key-cover_action{position:relative;z-index:5;width:min(340px,74vw);margin:-185px auto 82px}.st-key-cover_action button{font-size:1.08rem!important;min-height:3.15rem!important}.st-key-cover_settings{position:fixed;left:22px;top:20px;z-index:1002;width:110px}
+.island-panel{border:1.5px solid #d6bd91;border-radius:24px;background:rgba(255,250,235,.94);padding:18px;box-shadow:0 9px 24px rgba(96,74,50,.12)}
+.community-hero{height:clamp(190px,34vh,360px);border-radius:22px;background-size:cover;background-position:center;border:1.5px solid #cdb184;position:relative;overflow:hidden}.community-hero .label{position:absolute;left:18px;bottom:18px;background:rgba(255,248,226,.92);padding:10px 18px;border-radius:16px;font-weight:800;box-shadow:0 5px 15px rgba(70,55,35,.15)}
+.detail-art{height:clamp(230px,43vh,470px);border-radius:24px;background-size:cover;background-position:center;border:1.5px solid #cdb184;box-shadow:0 10px 28px rgba(75,55,35,.13)}
+.pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}.pro,.con{padding:9px 11px;border-radius:12px;font-size:.8rem}.pro{background:#e7f0d4}.con{background:#fae0d1}
+.bottom-nav{position:fixed;z-index:995;left:50%;bottom:12px;transform:translateX(-50%);display:flex;gap:5px;background:rgba(255,250,234,.96);border:1px solid #d1b586;border-radius:22px;padding:7px 9px;box-shadow:0 6px 24px rgba(76,58,35,.16);backdrop-filter:blur(9px)}.bottom-nav span{font-size:.72rem;padding:6px 10px;border-radius:14px;white-space:nowrap}.bottom-nav .active{background:#e9c36a;font-weight:800}
+.st-key-bottom_nav_buttons{position:fixed;z-index:1000;left:50%;bottom:10px;transform:translateX(-50%);width:min(710px,88vw);background:rgba(255,250,234,.97);border:1px solid #d1b586;border-radius:20px;padding:5px 8px;box-shadow:0 6px 24px rgba(76,58,35,.16);backdrop-filter:blur(9px)}.st-key-bottom_nav_buttons button{min-height:2.25rem!important;font-size:.72rem!important;border:0!important;box-shadow:none!important;background:transparent!important;padding:4px!important}
+.nest-room{height:clamp(280px,52vh,520px);border-radius:25px;background-size:cover;background-position:center;border:1.5px solid #c9aa78;box-shadow:0 12px 30px rgba(72,52,31,.14)}
+.record-card{padding:13px 15px;border:1px solid #dec59e;border-radius:16px;background:#fffaf0;margin:8px 0}.setting-card{max-width:720px;margin:0 auto;padding:22px;border:1.5px solid #d7ba8a;border-radius:24px;background:#fffaf0}
 .story-box{
   background:transparent; border:2px solid var(--line); border-radius:18px 15px 20px 14px;
   padding:12px 18px; color:var(--ink); font-size:.92rem; line-height:1.55; margin-bottom:10px;
@@ -118,16 +126,22 @@ button[kind="secondary"]{background:#fffefa!important;border-color:#b5a99d!impor
 @keyframes doorpop{ from{opacity:0; transform:scale(.9) translateY(6px);} to{opacity:1; transform:scale(1) translateY(0);} }
 @keyframes float{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-9px) rotate(5deg)}}
 @keyframes scenein{from{opacity:0;transform:translateY(16px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes oceanBreath{0%,100%{background-size:100% auto}50%{background-size:103% auto}}
 </style>
 """
 
 ROUND_STORY = {
-    1: ("第一站", "刚下地铁，你打开「落脚」，划到了这一片的房源——"),
-    2: ("第二站", "继续往前走，中介发来了新一批选项——"),
-    3: ("第三站", "天色渐暗，你决定再往前多看看——"),
-    4: ("第四站", "路过一条老街，这里的价格实在诱人——"),
-    5: ("第五站", "眼看快到公司附近了，通勤会不会更短——"),
-    6: ("最后一站", "如果只能选一个「家」，会是哪一套——"),
+    1: ("海湾社区", "靠近海边与渔港，咖啡香和慢节奏一起吹来。"),
+    2: ("绿野社区", "植物丰盛而安静，适合想亲近自然的住民。"),
+    3: ("岛中央城区", "商店集中、交通方便，也拥有更热闹的人流。"),
+    4: ("旧街社区", "老建筑与熟悉的邻里，让生活成本更从容。"),
+    5: ("湖畔新区", "新设施与湖景并存，是整洁舒适的新生活。"),
+    6: ("自由探索日前站", "完成最后三套看房后，小岛将向你完全开放。"),
+}
+
+COMMUNITY_ASSETS = {
+    1:"community-bay-v2.jpg",2:"community-green-v2.jpg",3:"community-city-v2.jpg",
+    4:"community-oldstreet-v2.jpg",5:"community-lake-v2.jpg",6:"community-free-v2.jpg",
 }
 
 # --------------------------------------------------------------------------
@@ -182,7 +196,8 @@ def inject_game_css() -> None:
 @st.cache_data(show_spinner=False)
 def _asset_data_url(path: str) -> str:
     data = Path(path).read_bytes()
-    return "data:image/png;base64," + base64.b64encode(data).decode("ascii")
+    mime = "image/jpeg" if Path(path).suffix.lower() in {".jpg", ".jpeg"} else "image/png"
+    return f"data:{mime};base64," + base64.b64encode(data).decode("ascii")
 
 
 def title_scene() -> None:
@@ -192,9 +207,8 @@ def title_scene() -> None:
         f"""
         <div class="island-cover" style="background-image:url('{cover}')">
           <div class="cover-copy">
-            <div class="narrative-kicker">一次关于选择与推荐的互动实验</div>
-            <div class="narrative-title">落脚小岛</div>
-            <div class="narrative-subtitle">六次选择，一座岛。<br>找到一间真正适合你的房子。</div>
+            <div class="narrative-title">租房小岛</div>
+            <div class="narrative-subtitle">找到你的理想小窝</div>
           </div>
         </div>
         """,
@@ -210,27 +224,51 @@ def journey_map() -> None:
     )
 
 
-HAIR_OPTIONS = {"wave": "柔软波浪", "bob": "清爽短发", "bun": "元气丸子"}
-OUTFIT_OPTIONS = {"leaf": "叶子 T 恤", "cardigan": "暖橘开衫"}
+def community_hero(day: int, title: str, description: str) -> None:
+    art = _asset_data_url(f"assets/image2/{COMMUNITY_ASSETS.get(day, COMMUNITY_ASSETS[1])}")
+    st.markdown(
+        f"<div class='community-hero' style=\"background-image:url('{art}')\"><div class='label'>第 {day} 天 · {title}<br><small>{description}</small></div></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def bottom_nav(active: str = "map") -> None:
+    items = [("map","🏝 小岛地图"),("nest","🏠 我的小窝"),("records","🔍 看房记录"),("favorites","⭐ 收藏"),("settings","⚙ 设置")]
+    html = "".join(f"<span class='{'active' if key == active else ''}'>{label}</span>" for key, label in items)
+    st.markdown(f"<div class='bottom-nav'>{html}</div>", unsafe_allow_html=True)
+
+
+def nest_room(theme: str) -> None:
+    filename = {"ocean":"nest-ocean-v2.jpg", "green":"nest-green-v2.jpg", "journal":"nest-journal-v2.jpg"}.get(theme, "nest-ocean-v2.jpg")
+    art = _asset_data_url(f"assets/image2/{filename}")
+    st.markdown(f"<div class='nest-room' style=\"background-image:url('{art}')\"></div>", unsafe_allow_html=True)
+
+
+HAIR_OPTIONS = {"short": "清爽短发", "long": "柔顺长发", "curly": "自然卷发", "twin": "元气双马尾"}
+HAIR_COLOR_OPTIONS = {"black":"黑色", "brown":"棕色", "blonde":"金色"}
+OUTFIT_OPTIONS = {"tee": "白 T", "hoodie": "卫衣", "shirt": "衬衫", "jacket": "外套"}
+BOTTOM_OPTIONS = {"jeans":"牛仔裤", "shorts":"短裤", "skirt":"长裙"}
 ACCESSORY_OPTIONS = {"bag": ("👜", "随身小包"), "cap": ("🧢", "遮阳帽"), "glasses": ("👓", "圆框眼镜"), "headphones": ("🎧", "通勤耳机")}
 
 
-def avatar_asset(hair: str, outfit: str) -> str:
-    safe_hair = hair if hair in HAIR_OPTIONS else "wave"
-    safe_outfit = outfit if outfit in OUTFIT_OPTIONS else "leaf"
-    return f"assets/image2/avatar-{safe_hair}-{safe_outfit}-v1.png"
+def avatar_asset(hair: str, hair_color: str = "brown") -> str:
+    safe_hair = hair if hair in HAIR_OPTIONS else "short"
+    safe_color = hair_color if hair_color in HAIR_COLOR_OPTIONS else "brown"
+    return f"assets/image2/avatar-{safe_color}-{safe_hair}-v2.jpg"
 
 
 def character_creator() -> dict:
     """Full character setup. Visual variants are real image2 assets."""
-    st.session_state.setdefault("avatar_hair", "wave")
-    st.session_state.setdefault("avatar_outfit", "leaf")
+    st.session_state.setdefault("avatar_hair", "short")
+    st.session_state.setdefault("avatar_hair_color", "brown")
+    st.session_state.setdefault("avatar_outfit", "tee")
+    st.session_state.setdefault("avatar_bottom", "shorts")
     st.session_state.setdefault("avatar_accessory", "bag")
     st.session_state.setdefault("player_name", "小岛新住民")
     preview, controls = st.columns([.9, 1.1], gap="large")
     with preview:
         with st.container(key="avatar_preview"):
-            st.image(avatar_asset(st.session_state.avatar_hair, st.session_state.avatar_outfit), use_container_width=True)
+            st.image(avatar_asset(st.session_state.avatar_hair, st.session_state.avatar_hair_color), use_container_width=True)
             icon, accessory_name = ACCESSORY_OPTIONS[st.session_state.avatar_accessory]
             st.markdown(
                 f"<div class='accessory-badge'>{icon}<br><small>{accessory_name}</small></div>",
@@ -240,16 +278,28 @@ def character_creator() -> dict:
         st.markdown("#### 创建你的角色")
         st.session_state.player_name = st.text_input("起个名字", value=st.session_state.player_name, max_chars=16)
         st.markdown("<div class='creator-label'>选择发型</div>", unsafe_allow_html=True)
-        hair_cols = st.columns(3)
+        hair_cols = st.columns(4)
         for col, (key, label) in zip(hair_cols, HAIR_OPTIONS.items()):
             if col.button(label, key=f"hair_{key}", type="primary" if st.session_state.avatar_hair == key else "secondary", use_container_width=True):
                 st.session_state.avatar_hair = key
                 st.rerun()
+        st.markdown("<div class='creator-label'>选择发色</div>", unsafe_allow_html=True)
+        color_cols = st.columns(3)
+        for col, (key, label) in zip(color_cols, HAIR_COLOR_OPTIONS.items()):
+            if col.button(label, key=f"hair_color_{key}", type="primary" if st.session_state.avatar_hair_color == key else "secondary", use_container_width=True):
+                st.session_state.avatar_hair_color = key
+                st.rerun()
         st.markdown("<div class='creator-label'>选择服装</div>", unsafe_allow_html=True)
-        outfit_cols = st.columns(2)
+        outfit_cols = st.columns(4)
         for col, (key, label) in zip(outfit_cols, OUTFIT_OPTIONS.items()):
             if col.button(label, key=f"outfit_{key}", type="primary" if st.session_state.avatar_outfit == key else "secondary", use_container_width=True):
                 st.session_state.avatar_outfit = key
+                st.rerun()
+        st.markdown("<div class='creator-label'>选择下装</div>", unsafe_allow_html=True)
+        bottom_cols = st.columns(3)
+        for col, (key, label) in zip(bottom_cols, BOTTOM_OPTIONS.items()):
+            if col.button(label, key=f"bottom_{key}", type="primary" if st.session_state.avatar_bottom == key else "secondary", use_container_width=True):
+                st.session_state.avatar_bottom = key
                 st.rerun()
         st.markdown("<div class='creator-label'>选择配饰</div>", unsafe_allow_html=True)
         accessory_cols = st.columns(4)
@@ -259,7 +309,9 @@ def character_creator() -> dict:
                 st.rerun()
     return {
         "hair": st.session_state.avatar_hair,
+        "hair_color": st.session_state.avatar_hair_color,
         "outfit": st.session_state.avatar_outfit,
+        "bottom": st.session_state.avatar_bottom,
         "accessory": st.session_state.avatar_accessory,
         "name": st.session_state.player_name,
     }
@@ -268,7 +320,7 @@ def character_creator() -> dict:
 def game_topbar(day: int, total_days: int, coins: int, player_name: str, accessory: str) -> None:
     icon = ACCESSORY_OPTIONS.get(accessory, ("👜", ""))[0]
     st.markdown(
-        f"""<div class='game-topbar'><div class='game-brand'>🏝️ 落脚小岛</div>
+        f"""<div class='game-topbar'><div class='game-brand'>🏝️ 租房小岛</div>
         <div class='game-stats'><span class='game-stat'>第 {day}/{total_days} 天</span>
         <span class='game-stat'>🪙 {coins}</span><span class='game-stat'>{icon} {player_name}</span></div></div>""",
         unsafe_allow_html=True,
@@ -301,10 +353,10 @@ def day_summary_card(round_number: int, row: dict, coins_earned: int) -> None:
     )
 
 
-def character_identity_card(hair: str, outfit: str, accessory: str, name: str, coins: int, badges: list[dict], group_label: str) -> None:
+def character_identity_card(hair: str, outfit: str, accessory: str, name: str, coins: int, badges: list[dict], group_label: str, hair_color: str = "brown") -> None:
     left, right = st.columns([.35, .65])
     with left:
-        st.image(avatar_asset(hair, outfit), use_container_width=True)
+        st.image(avatar_asset(hair, hair_color), use_container_width=True)
     with right:
         icon, accessory_name = ACCESSORY_OPTIONS.get(accessory, ("👜", "随身小包"))
         st.markdown(f"### {icon} {name}")
@@ -536,7 +588,7 @@ def dialogue_box(speaker_emoji: str, speaker_name: str, text: str, page: int = 1
     st.markdown(html, unsafe_allow_html=True)
 
 
-def game_card(row: pd.Series, label: str, is_recommended: bool, group: str, explanation: str | None, type_labels: dict, landlord: Optional[dict] = None, locked: bool = False) -> None:
+def game_card(row: pd.Series, label: str, is_recommended: bool, group: str, explanation: str | None, type_labels: dict, landlord: Optional[dict] = None, locked: bool = False, round_number: int = 1, detailed: bool = False) -> None:
     highlight = is_recommended and group != "control"
     badge = "<span class='game-badge'>⭐ AI 推荐</span>" if highlight else ""
     score = f"<div class='game-muted'>推荐分数：{row['recommendation_score']:.1f}/100</div>" if highlight else ""
@@ -548,8 +600,14 @@ def game_card(row: pd.Series, label: str, is_recommended: bool, group: str, expl
 
     location = row.get("location_text") if pd.notna(row.get("location_text")) else row["district"]
     lock_note = "<div class='game-muted' style='color:var(--coral);'>🚶 走到门口才能敲门哦</div>" if locked else ""
-    art_name = {"A": "studio-blue-v1.png", "B": "bedroom-cream-v1.png", "C": "living-sage-v1.png"}.get(label, "studio-blue-v1.png")
+    art_name = COMMUNITY_ASSETS.get(round_number, COMMUNITY_ASSETS[1])
     room_art = _asset_data_url(f"assets/image2/{art_name}")
+    facilities = ["Wi-Fi", "厨房"]
+    if float(row.get("area_sqm", 0) or 0) >= 35: facilities.append("阳台")
+    if str(row.get("orientation", "")) in {"南", "东南", "南北"}: facilities.append("采光佳")
+    facility_text = " · ".join(facilities)
+    pro = "空间舒适，生活设施较完整" if float(row.get("area_sqm", 0) or 0) >= 30 else "小而温馨，日常打理轻松"
+    con = "租金需要仔细规划" if float(row.get("monthly_rent", 0) or 0) > 6000 else "离核心商业区可能较远"
     html = f"""
     <div class="game-card {'recommended' if highlight else ''} {'locked' if locked else ''}">
       <div class="room-art" style="background-image:url('{room_art}')" role="img" aria-label="房源 {label} 室内插画"></div>
@@ -566,10 +624,30 @@ def game_card(row: pd.Series, label: str, is_recommended: bool, group: str, expl
         🧭 朝向：{row.get('orientation') if pd.notna(row.get('orientation')) else '数据未提供'}
       </p>
       <p style="font-size:.82rem; color:#cfc4ea;">{row['short_description']}</p>
+      <div class='game-muted'>🛜 {facility_text}</div>
+      <div class='pros-cons'><div class='pro'>优点 · {pro}</div><div class='con'>注意 · {con}</div></div>
       {lock_note}
     </div>
     """
     st.markdown(html, unsafe_allow_html=True)
+
+
+def property_detail(row: pd.Series, label: str, day: int, type_labels: dict, landlord: dict) -> None:
+    art = _asset_data_url(f"assets/image2/{COMMUNITY_ASSETS.get(day, COMMUNITY_ASSETS[1])}")
+    location = row.get("location_text") if pd.notna(row.get("location_text")) else row["district"]
+    area = float(row.get("area_sqm", 0) or 0)
+    rent = int(row.get("monthly_rent", 0) or 0)
+    suitable = "喜欢安静、自然与独处的人" if day in {1,2,5} else "重视便利、邻里与城市生活的人"
+    unsuitable = "追求高密度商业与夜生活的人" if day in {1,2,5} else "非常在意绝对安静环境的人"
+    layout = f"{int(row.get('bedrooms', 0) or 0)}室 · {type_labels.get(row.get('rental_type'), '住宅')}"
+    st.markdown(f"<div class='detail-art' style=\"background-image:url('{art}')\"></div>", unsafe_allow_html=True)
+    st.markdown(
+        f"""<div class='island-panel' style='margin-top:12px'><h2>{row['title']}</h2>
+        <div class='game-price'>¥{rent:,}/月</div><p>📍 {location}<br>📐 {area:.0f}㎡　🏠 {layout}<br>🚇 距地铁 {float(row.get('metro_distance_m',0) or 0):.0f} 米</p>
+        <hr><h4>生活评价</h4><p>✅ 适合：{suitable}<br>🌙 不适合：{unsuitable}</p>
+        <p class='game-muted'>{landlord['emoji']} {landlord['name']}：{landlord['line']}</p></div>""",
+        unsafe_allow_html=True,
+    )
 
 
 # --------------------------------------------------------------------------
