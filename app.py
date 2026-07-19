@@ -1,18 +1,9 @@
 """RentChoice AI participant-facing Streamlit application.
 
-Game-ified presentation layer (v4 - Mario-style street): the participant
-now actually WALKS a little sprite left/right along a street with ◀ / ▶
-buttons, has to reach a door before it will let them knock, picks up
-coins on the way, and gets a paged RPG-style dialogue box from each
-landlord — on top of the existing avatar / coin / achievement / level-
-clear systems, all rendered by src/game_ui.py.
-
-Movement, coins and dialogue paging are driven by real
-st.session_state — not just decoration — but they are entirely separate
-from the experiment data. Treatment assignment, choice-set construction,
-recommendation scoring, explanations, welfare metrics, and storage are
-imported and used exactly as in the original app, so saved data keeps
-the same schema described in docs/variable_dictionary.md.
+The presentation follows a scene-by-scene interactive-explainer rhythm:
+a cover, a short introduction, preferences, six focused choices, and a
+closing reflection. Experiment assignment, scoring, outcomes, and storage
+remain unchanged.
 """
 from __future__ import annotations
 import time, uuid
@@ -27,11 +18,11 @@ from src.explanations import optional_llm_explanation
 from src.recommender import score_listings
 from src.storage import save_choice, save_participant, save_post_survey, storage_mode
 from src.game_ui import (
-    inject_game_css, quest_log, intro_skyline, avatar_picker, interactive_street,
+    inject_game_css, quest_log, title_scene, journey_map, scene_heading, progress_dots,
+    character_creator, game_topbar, day_route, day_summary_card, character_identity_card,
     star_picker, game_card, confetti_burst, ROUND_STORY, landlord_for,
     hud_bar, dialogue_box, compute_badges, badge_toast, badge_shelf,
     level_clear_banner, identity_card, sound_ping,
-    DOOR_X, COIN_X, STREET_WIDTH, MOVE_STEP, RUN_STEP, KNOCK_RANGE, COIN_RANGE,
 )
 
 load_dotenv()
@@ -50,20 +41,21 @@ QUEST_STEPS = ["① 行前准备", "② 沿街找房 ×6", "③ 结束问卷"]
 COINS_PER_ROUND = 15
 COINS_QUICK_BONUS = 5   # awarded when a decision took under 15s — flavor only
 COIN_PICKUP_VALUE = 5   # flavor coins picked up while walking the street
-STREET_START_X = 10
 
 
 def init_state() -> None:
     """Initialize all workflow state in one place."""
     defaults = {
-        "stage": "welcome", "participant_id": None, "treatment_group": None,
-        "preferences": None, "choice_sets": None, "round_number": 1,
+        "stage": "cover", "participant_id": None, "treatment_group": None,
+        "preferences": None, "preference_draft": {}, "choice_sets": None, "round_number": 1,
         "round_started_at": None, "choices": [], "survey_done": False,
         "choice_stage": "pick", "picked_label": None,
         # cosmetic game-layer state — never written to the saved dataset
-        "avatar": None, "coins": 0, "badges_earned": [], "pending_toast": [],
-        "sound_on": False, "street_x": STREET_START_X, "facing": "right",
-        "collected_coins": set(), "dialogue_page": 1, "clear_coins_earned": 0,
+        "avatar": None, "avatar_hair": "wave", "avatar_outfit": "leaf",
+        "avatar_accessory": "bag", "player_name": "小岛新住民",
+        "coins": 0, "badges_earned": [], "pending_toast": [],
+        "sound_on": False, "dialogue_page": 1, "clear_coins_earned": 0,
+        "stage_history": [],
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
@@ -75,8 +67,20 @@ def listings_data() -> pd.DataFrame:
 
 
 def go(stage: str) -> None:
+    current = st.session_state.get("stage")
+    if current and current != stage:
+        st.session_state.stage_history.append(current)
     st.session_state.stage = stage
     st.rerun()
+
+
+def render_back_button() -> None:
+    if st.session_state.stage == "cover" or not st.session_state.stage_history:
+        return
+    with st.container(key="back_nav"):
+        if st.button("← 返回", key="global_back", use_container_width=True):
+            st.session_state.stage = st.session_state.stage_history.pop()
+            st.rerun()
 
 
 def top_progress(label: str, value: float) -> None:
@@ -92,59 +96,49 @@ def _show_pending_toast() -> None:
         st.session_state.pending_toast = []
 
 
-def _move_character(delta: int) -> None:
-    """Real movement handler: updates position, flips facing, and
-    auto-collects any coin the character walks over. Cosmetic bookkeeping
-    only — never touches the saved experiment rows."""
-    new_x = max(0, min(STREET_WIDTH, st.session_state.street_x + delta))
-    st.session_state.facing = "right" if delta >= 0 else "left"
-    for i, cx in enumerate(COIN_X):
-        if i in st.session_state.collected_coins:
-            continue
-        if abs(new_x - cx) <= COIN_RANGE:
-            st.session_state.collected_coins.add(i)
-            st.session_state.coins += COIN_PICKUP_VALUE
-            st.toast(f"🪙 捡到一枚金币 +{COIN_PICKUP_VALUE}", icon="🪙")
-            if st.session_state.sound_on:
-                sound_ping("coin")
-    st.session_state.street_x = new_x
-    if st.session_state.sound_on:
-        sound_ping("step")
-    st.rerun()
+def cover_page() -> None:
+    title_scene()
+    with st.container(key="cover_action"):
+        if st.button("开始游戏 →", type="primary", use_container_width=True):
+            go("intro")
+
+
+def intro_page() -> None:
+    progress_dots(0, 12)
+    scene_heading(
+        "序章 · 在城市里找一个位置",
+        "你会怎样选择一间房？",
+        "租金、面积、位置、地铁……每套房都像一道没有标准答案的题。接下来，"
+        "你会完成六次选择；有时算法会出现，有时它会保持沉默。",
+    )
+    journey_map()
+    st.markdown("<div class='story-box' style='max-width:720px;margin:0 auto 18px;'>这里没有真正的最佳房源。我们想观察的是：当推荐介入选择，人会更快、更满意，还是更容易被一个分数带走？</div>", unsafe_allow_html=True)
+    if st.button("创建我的岛民角色 →", type="primary", use_container_width=True):
+        go("welcome")
 
 
 def welcome() -> None:
-    intro_skyline()
-    st.markdown("<div class='pxl' style='font-size:1.8rem;margin-top:14px;'>落脚</div>", unsafe_allow_html=True)
-    st.subheader("面向大学生的可解释租房推荐与住房选择研究平台")
-    quest_log(QUEST_STEPS, current=0)
-    st.info("这是《人工智能与经管前沿》课程项目和研究原型。房源来自用户提供的上海租赁挂牌数据快照，并非实时房源或成交记录，不构成真实租房、投资或消费建议。")
-    st.markdown("""
-本体验约需 8–12 分钟。原始数据共 29,006 条，系统仅从通过基础质量检查的记录中抽取实验选项。数据快照可能过时，平台未验证挂牌真实性或可租状态。系统不会收集姓名、电话、邮箱、身份证、学校全称或精确住址。你的偏好、选择与反应时间将使用随机匿名编号保存，仅用于课程展示和潜在学术研究设计。你可以随时关闭页面退出。
-
-你将先设置租房偏好，再走上街头完成 6 轮找房任务，最后填写简短问卷。走到门口才能敲门看房——不同参与者看到的信息形式可能不同，这是随机研究设计的一部分。
-""")
-    avatar_picker("avatar")
+    progress_dots(1, 12)
+    scene_heading("角色创建", "先成为小岛的新住民", "选择发型、服装和随身配饰。角色设置只用于游戏展示，不写入实验数据。")
+    character_creator()
+    st.info("房源来自上海租赁挂牌数据快照，并非实时房源或成交记录；本体验不构成真实租房建议。")
+    st.caption("约 8–12 分钟 · 不收集真实姓名、电话、邮箱或精确住址 · 可随时关闭退出")
     st.session_state.sound_on = st.toggle("🔊 开启轻量音效（可选，浏览器可能会拦截自动播放）", value=st.session_state.sound_on)
     consent = st.checkbox("我已阅读以上说明，同意匿名记录我的选择数据")
-    if st.button("我同意，进入数码世界 →", type="primary", disabled=not consent, use_container_width=True):
+    if st.button("创建完成，开始租房之旅 →", type="primary", disabled=not consent, use_container_width=True):
         st.session_state.participant_id = str(uuid.uuid4())
         st.session_state.treatment_group = assign_treatment(st.session_state.participant_id)
-        go("preferences")
+        go("preferences_basic")
 
 
-def preferences_page() -> None:
-    top_progress("行前准备", .08)
-    quest_log(QUEST_STEPS, current=0)
-    st.markdown("<div class='story-box'><b class='pxl' style='font-size:.75rem;'>行前准备</b><br>"
-                 "你刚拿到这座城市的 offer，接下来要找一个未来一年的落脚点。先告诉「落脚」你在意什么——"
-                 "这些偏好会陪你走完整趟旅程，也会决定路上遇到的向导会怎么给你指路。</div>", unsafe_allow_html=True)
-    st.title("你的租房偏好")
-    st.caption("请按真实想法回答；不需要填写任何身份识别信息。")
-    with st.form("preferences_form"):
+def preferences_basic_page() -> None:
+    progress_dots(2, 12)
+    scene_heading("第一幕 · 你的地图", "先画出房子的边界", "预算、地点和空间——先告诉我们哪些是不能退让的条件。")
+    draft = st.session_state.preference_draft
+    with st.form("preferences_basic_form"):
         c1,c2 = st.columns(2)
-        budget_max = c1.number_input("💰 每月最高预算（元）", 500, 100000, 7000, 100)
-        ideal_rent = c2.number_input("💵 最理想月租（元）", 500, 80000, 5500, 100)
+        budget_max = c1.number_input("💰 每月最高预算（元）", 500, 100000, int(draft.get("budget_max", 7000)), 100)
+        ideal_rent = c2.number_input("💵 最理想月租（元）", 500, 80000, int(draft.get("ideal_rent", 5500)), 100)
         destination_district = c1.selectbox(
             "📍 主要目的地区域（不需要填写精确地址）",
             [
@@ -157,6 +151,24 @@ def preferences_page() -> None:
         min_area = c2.slider("📐 最低可接受面积（㎡）", 5, 300, 35)
         rental_pref_label = st.radio("🏠 租赁类型偏好", ["接受合租", "仅接受单间或整租", "无明显偏好"], horizontal=True)
         metro_priority = st.toggle("🚉 我重视地铁便利", value=True)
+        submitted = st.form_submit_button("下一步：哪些更重要？ →", type="primary", use_container_width=True)
+    if submitted:
+        if ideal_rent > budget_max:
+            st.error("最理想月租不能高于最高预算，请调整后重试。")
+            return
+        mapping = {"接受合租":"accept_shared", "仅接受单间或整租":"no_shared", "无明显偏好":"no_preference"}
+        st.session_state.preference_draft = {
+            "budget_max": budget_max, "ideal_rent": ideal_rent,
+            "destination_district": destination_district, "min_area": min_area,
+            "rental_type_preference": mapping[rental_pref_label], "metro_priority": metro_priority,
+        }
+        go("preferences_detail")
+
+
+def preferences_detail_page() -> None:
+    progress_dots(3, 12)
+    scene_heading("第一幕 · 你的地图", "再排一次优先顺序", "同样的房源，不同的人会看见不同的答案。拖动滑块，表达你真正的取舍。")
+    with st.form("preferences_detail_form"):
         st.markdown("##### 各因素重要性（1=不重要，5=非常重要）")
         cols = st.columns(4)
         fields = [("租金","importance_rent"),("目的地区域匹配","importance_location"),("面积","importance_area"),("地铁距离","importance_metro")]
@@ -166,11 +178,7 @@ def preferences_page() -> None:
         status = st.selectbox("当前身份", ["本科生", "研究生", "实习生", "已工作", "其他"])
         submitted = st.form_submit_button("背好包，出发 →", type="primary", use_container_width=True)
     if submitted:
-        if ideal_rent > budget_max:
-            st.error("最理想月租不能高于最高预算，请调整后重试。")
-            return
-        mapping = {"接受合租":"accept_shared", "仅接受单间或整租":"no_shared", "无明显偏好":"no_preference"}
-        prefs = {"budget_max":budget_max,"ideal_rent":ideal_rent,"destination_district":destination_district,"min_area":min_area,"rental_type_preference":mapping[rental_pref_label],"metro_priority":metro_priority,**vals,"prior_rental_experience":prior=="是","initial_ai_trust":trust,"participant_status":status}
+        prefs = {**st.session_state.preference_draft, **vals, "prior_rental_experience":prior=="是", "initial_ai_trust":trust, "participant_status":status}
         st.session_state.preferences = prefs
         st.session_state.choice_sets = build_choice_sets(listings_data(), st.session_state.participant_id)
         try:
@@ -179,7 +187,7 @@ def preferences_page() -> None:
             st.error(f"偏好暂时无法保存：{exc}"); return
         st.session_state.round_started_at = time.time()
         st.session_state.choice_stage = "pick"
-        go("choice")
+        go("journey")
 
 
 def _scored_options(r: int):
@@ -199,6 +207,26 @@ def _scored_options(r: int):
     return scored, recommended_id, explanation
 
 
+def journey_page() -> None:
+    r = int(st.session_state.round_number)
+    if r > TOTAL_ROUNDS:
+        go("survey")
+        return
+    game_topbar(r, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
+    day_route(r, TOTAL_ROUNDS)
+    title, story = ROUND_STORY.get(r, (f"第 {r} 站", "新的房源正在等待你。"))
+    scene_heading(f"第 {r} 天 · 我的租房之旅", title, story)
+    journey_map()
+    st.markdown(
+        f"<div class='story-box' style='max-width:760px;margin:0 auto 12px;text-align:center;'>今日目标：查看 3 套房源，完成 1 次选择，并记录你的真实感受。</div>",
+        unsafe_allow_html=True,
+    )
+    if st.button(f"进入第 {r} 天 →", type="primary", use_container_width=True):
+        st.session_state.round_started_at = time.time()
+        st.session_state.choice_stage = "pick"
+        go("choice")
+
+
 def choice_page() -> None:
     r = int(st.session_state.round_number)
     if r > TOTAL_ROUNDS:
@@ -209,52 +237,38 @@ def choice_page() -> None:
     stage = st.session_state.choice_stage
     landlords = {lab: landlord_for(r, lab) for lab in labels}
 
-    top_progress(f"第 {r}/{TOTAL_ROUNDS} 站", .1 + .65*(r-1)/TOTAL_ROUNDS)
-    quest_log(QUEST_STEPS, current=1)
+    game_topbar(r, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
+    progress_dots(r + 3, 12)
     hud_bar(st.session_state.coins, _current_streak(), len(st.session_state.badges_earned))
     _show_pending_toast()
 
-    title, story = ROUND_STORY.get(r, (f"第 {r} 站", "新一批房源出现了——"))
-    st.markdown(f"<div class='story-box'><b class='pxl' style='font-size:.75rem;'>{title}</b><br>{story}</div>", unsafe_allow_html=True)
-
     if stage == "clear":
-        level_clear_banner(r, TOTAL_ROUNDS, st.session_state.clear_coins_earned)
+        completed = next((x for x in st.session_state.choices if x["round_number"] == r), {})
+        completed = {**completed, "chosen_listing_id": st.session_state.picked_label or "—"}
+        scene_heading(f"☀️ 第 {r} 天结束", "今天也找到了一处可能的家", "回顾今天的选择与收获，准备继续探索小岛。")
+        day_summary_card(r, completed, st.session_state.clear_coins_earned)
         badge_toast(st.session_state.pending_toast)
         st.session_state.pending_toast = []
-        if st.button("继续前进 →", type="primary", use_container_width=True):
+        if st.button("结束今天，返回旅程地图 →", type="primary", use_container_width=True):
             st.session_state.round_number = r + 1
             st.session_state.round_started_at = time.time()
             st.session_state.choice_stage = "pick"
             st.session_state.picked_label = None
-            st.session_state.street_x = STREET_START_X
-            st.session_state.facing = "right"
-            st.session_state.collected_coins = set()
             st.session_state.dialogue_page = 1
-            go("survey" if r == TOTAL_ROUNDS else "choice")
+            go("survey" if r == TOTAL_ROUNDS else "journey")
         return
 
-    if stage == "pick":
-        interactive_street(r, TOTAL_ROUNDS, st.session_state.street_x, st.session_state.avatar, DOOR_X, landlords, st.session_state.collected_coins, facing=st.session_state.facing)
-        mc1, mc2, mc3, mc4 = st.columns(4)
-        if mc1.button("◀◀ 快退", use_container_width=True):
-            _move_character(-RUN_STEP)
-        if mc2.button("◀ 走", use_container_width=True):
-            _move_character(-MOVE_STEP)
-        if mc3.button("走 ▶", use_container_width=True):
-            _move_character(MOVE_STEP)
-        if mc4.button("快进 ▶▶", use_container_width=True):
-            _move_character(RUN_STEP)
+    title, story = ROUND_STORY.get(r, (f"第 {r} 站", "新一批房源出现了——"))
+    scene_heading(f"选择 {r} / {TOTAL_ROUNDS}", title, story)
 
-        st.subheader("这一站，你会敲开哪一扇门？")
+    if stage == "pick":
+        st.markdown("<div class='scene-copy'>仔细比较，然后凭第一判断选择一扇门。</div>", unsafe_allow_html=True)
         cols = st.columns(3)
         for i, (_, row) in enumerate(scored.iterrows()):
             label = labels[i]
-            near = abs(st.session_state.street_x - DOOR_X[label]) <= KNOCK_RANGE
             with cols[i]:
-                game_card(row, label, row["listing_id"] == recommended_id, st.session_state.treatment_group, explanation, TYPE_LABELS, landlord=landlords[label], locked=not near)
-                dist = abs(st.session_state.street_x - DOOR_X[label])
-                btn_label = f"敲门 · {label} →" if near else f"🚶 还差 {dist}px 走近点"
-                if st.button(btn_label, key=f"pick_{r}_{label}", type="primary" if near else "secondary", use_container_width=True, disabled=not near):
+                game_card(row, label, row["listing_id"] == recommended_id, st.session_state.treatment_group, explanation, TYPE_LABELS, landlord=landlords[label])
+                if st.button(f"选择 {label} →", key=f"pick_{r}_{label}", type="primary", use_container_width=True):
                     st.session_state.picked_label = label
                     st.session_state.choice_stage = "rate"
                     st.session_state.dialogue_page = 1
@@ -275,26 +289,32 @@ def choice_page() -> None:
     speaker_emoji = landlord["emoji"] if page == 1 else "🏮"
 
     st.subheader(f"你敲开了房源 {st.session_state.picked_label} 的门")
-    dialogue_box(speaker_emoji, speaker, pages[page - 1], page, len(pages))
-    if page < len(pages):
-        if st.button("▶ 继续", key=f"dlg_next_{r}"):
-            st.session_state.dialogue_page += 1
-            st.rerun()
+    info_col, rating_col = st.columns([1.08, .92], gap="large")
+    with info_col:
+        dialogue_box(speaker_emoji, speaker, pages[page - 1], page, len(pages))
+        if page < len(pages):
+            if st.button("▶ 继续", key=f"dlg_next_{r}"):
+                st.session_state.dialogue_page += 1
+                st.rerun()
+        game_card(
+            chosen_row, st.session_state.picked_label,
+            chosen_row["listing_id"] == recommended_id,
+            st.session_state.treatment_group, None, TYPE_LABELS, landlord=landlord,
+        )
 
-    game_card(chosen_row, st.session_state.picked_label, chosen_row["listing_id"] == recommended_id, st.session_state.treatment_group, None, TYPE_LABELS, landlord=landlord)
-
-    satisfaction = star_picker(f"sat_{r}", "对这次选择的满意度", scale=7, icon="★", default=4)
-    confidence = star_picker(f"conf_{r}", "选择信心", scale=7, icon="⚡", default=4)
-    wtp_limit = max(30000, int(chosen_row.monthly_rent * 1.5))
-    wtp = st.number_input("对所选房源的最高月租支付意愿（元）", 1000, wtp_limit, 3000, 100, key=f"wtp_{r}")
-    
-    c1, c2 = st.columns([1, 2])
-    with c1:
-        if st.button("← 换一套", key=f"back_{r}", use_container_width=True):
-            st.session_state.choice_stage = "pick"
-            st.rerun()
-    with c2:
-        confirm = st.button("确认选择，继续前进 →", key=f"confirm_{r}", type="primary", use_container_width=True)
+    with rating_col:
+        st.markdown("#### 这一刻，你怎么想？")
+        satisfaction = star_picker(f"sat_{r}", "对这次选择的满意度", scale=7, icon="★", default=4)
+        confidence = star_picker(f"conf_{r}", "选择信心", scale=7, icon="⚡", default=4)
+        wtp_limit = max(30000, int(chosen_row.monthly_rent * 1.5))
+        wtp = st.number_input("最高月租支付意愿（元）", 1000, wtp_limit, 3000, 100, key=f"wtp_{r}")
+        c1, c2 = st.columns([1, 2])
+        with c1:
+            if st.button("← 换一套", key=f"back_{r}", use_container_width=True):
+                st.session_state.choice_stage = "pick"
+                st.rerun()
+        with c2:
+            confirm = st.button("确认选择 →", key=f"confirm_{r}", type="primary", use_container_width=True)
 
     if confirm:
         chosen_u, best_u, loss = welfare_metrics(scored, str(chosen_row.listing_id))
@@ -358,13 +378,11 @@ def _current_streak() -> int:
 
 
 def survey_page() -> None:
-    top_progress("结束问卷", .82)
-    quest_log(QUEST_STEPS, current=2)
+    game_topbar(TOTAL_ROUNDS, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
+    progress_dots(10, 12)
     hud_bar(st.session_state.coins, _current_streak(), len(st.session_state.badges_earned))
     _show_pending_toast()
-    st.markdown("<div class='story-box'><b class='pxl' style='font-size:.75rem;'>最后一站</b><br>"
-                 "旅程快结束了，聊聊这一路的体验，就真正「落脚」了。</div>", unsafe_allow_html=True)
-    st.title("最后几道问题")
+    scene_heading("终幕 · 回望", "最后几道问题", "旅程快结束了。聊聊这一路的体验，就真正“落脚”了。")
     control = st.session_state.treatment_group == "control"
     with st.form("post_survey"):
         helpful = st.slider("房源排序是否有帮助" if control else "AI 推荐是否有帮助",1,7,4)
@@ -381,7 +399,8 @@ def survey_page() -> None:
 
 
 def results_page() -> None:
-    top_progress("已完成",1.0)
+    game_topbar(TOTAL_ROUNDS, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
+    progress_dots(11, 12)
     confetti_burst()
     if st.session_state.sound_on:
         sound_ping("badge")
@@ -391,7 +410,12 @@ def results_page() -> None:
     if choices.empty: st.warning("当前会话没有可汇总的选择记录。"); return
     summary=participant_summary(choices)
 
-    identity_card(st.session_state.avatar, st.session_state.coins, st.session_state.badges_earned, GROUP_LABELS[st.session_state.treatment_group])
+    character_identity_card(
+        st.session_state.avatar_hair, st.session_state.avatar_outfit,
+        st.session_state.avatar_accessory, st.session_state.player_name,
+        st.session_state.coins, st.session_state.badges_earned,
+        GROUP_LABELS[st.session_state.treatment_group],
+    )
     st.markdown("##### 本次解锁的成就")
     badge_shelf(st.session_state.badges_earned)
 
@@ -407,8 +431,12 @@ def results_page() -> None:
 
 
 init_state()
+render_back_button()
 try:
-    {"welcome":welcome,"preferences":preferences_page,"choice":choice_page,"survey":survey_page,"results":results_page}.get(st.session_state.stage,welcome)()
+    {"cover":cover_page,"intro":intro_page,"welcome":welcome,
+     "preferences_basic":preferences_basic_page,"preferences_detail":preferences_detail_page,
+     "journey":journey_page,"choice":choice_page,
+     "survey":survey_page,"results":results_page}.get(st.session_state.stage,cover_page)()
 except Exception as exc:
     st.error(f"页面遇到异常：{exc}")
     st.info("请刷新页面重试；已成功提交的数据不会因刷新而被覆盖。")
