@@ -20,6 +20,7 @@ data/listings.csv           模拟房源
 src/                        推荐、实验、存储、解释、统计模块
 scripts/smoke_test.py       离线自检
 docs/                       系统设计、研究设计、变量字典
+assets/                     图像
 ```
 
 ## 零基础本地运行
