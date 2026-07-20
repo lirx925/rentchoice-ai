@@ -45,7 +45,7 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 .roof.r1{left:5%;}.roof.r2{left:29%; height:105px; width:155px}.roof.r3{right:26%; height:88px}.roof.r4{right:3%; height:118px;width:145px}
 .float-key{position:absolute; font-size:2rem; color:var(--accent); animation:float 2.8s ease-in-out infinite;}.k1{left:17%;top:13px}.k2{right:18%;top:38px;animation-delay:.8s}.k3{left:48%;top:2px;animation-delay:1.4s}
 .scene-shell{max-width:900px; margin:0 auto; animation:scenein .42s cubic-bezier(.2,.8,.2,1);}
-.journey-map{width:min(1000px,94vw,calc((100svh - 96px)*1586/992));aspect-ratio:1586/992;border-radius:24px;border:1.5px solid #b8a58f;background-color:#9dd3ec;background-position:center;background-size:contain;background-repeat:no-repeat;box-shadow:0 12px 34px rgba(91,74,57,.14);margin:.5rem auto 1rem;position:relative;overflow:hidden}.journey-map:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(52,76,55,.12))}
+.journey-map{width:min(calc(100vw - 40px),calc((100svh - 40px)*1586/992));aspect-ratio:1586/992;border-radius:24px;border:1.5px solid #b8a58f;background-color:#9dd3ec;background-position:center;background-size:100% 100%;background-repeat:no-repeat;box-shadow:0 12px 34px rgba(91,74,57,.14);margin:0;left:50%;transform:translateX(-50%);position:relative;overflow:hidden}.journey-map:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(52,76,55,.12))}
 .game-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:9px 14px;border:1px solid #dbc5a2;border-radius:18px;background:rgba(255,248,225,.94);box-shadow:0 4px 14px rgba(94,78,65,.08)}.game-brand{font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif;font-size:1.4rem;font-weight:800;color:#7b5b34}.game-stats{display:flex;gap:8px;align-items:center}.game-stat{padding:5px 10px;border-radius:16px;background:#fff3cc;font-weight:700;font-size:.8rem}
 .creator-shell{display:grid;grid-template-columns:.9fr 1.1fr;gap:22px;max-width:980px;margin:0 auto 70px}.creator-preview{border:1.5px solid #d8bc91;border-radius:24px;background:#fff5dc;padding:14px;box-shadow:0 10px 25px rgba(92,65,38,.12)}.creator-preview img{display:block;width:100%;max-height:54vh;object-fit:contain;border-radius:18px}.creator-controls{border:1.5px solid #e3cfad;border-radius:24px;background:#fffaf0;padding:20px}.creator-section{padding:11px 0;border-bottom:1px dashed #e1cba9}.creator-section:last-child{border-bottom:0}.creator-label{font-weight:800;margin-bottom:7px;color:#76583a}.accessory-badge{text-align:center;font-size:2rem;padding:8px;margin-top:8px;border-radius:16px;background:#fff0c9}
 .st-key-avatar_preview{border:1.5px solid #d8bc91;border-radius:24px;background:#fff5dc;padding:14px;box-shadow:0 10px 25px rgba(92,65,38,.12)}.st-key-avatar_preview img{max-height:52vh;object-fit:contain;border-radius:18px}
@@ -132,6 +132,26 @@ button[kind="secondary"]{background:#fffefa!important;border-color:#b5a99d!impor
 .option-sheet-tile{width:100%;aspect-ratio:1;box-sizing:border-box;border:2px solid transparent;border-radius:15px;background-repeat:no-repeat;overflow:hidden}
 .option-sheet-tile.selected{border-color:var(--accent)}
 .option-sheet-label{height:1.4rem;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;font-size:.72rem;font-weight:700;margin:5px 0 6px;color:var(--ink)}
+.scene-copy:empty{display:none}
+.stApp:has(.st-key-character_creator) .block-container{max-width:1240px}
+.stApp:has(.st-key-character_creator) .scene-title{font-size:clamp(2rem,3.2vw,3rem);margin-bottom:.75rem}
+.stApp:has(.st-key-character_creator) .scene-number{font-size:.72rem;margin-bottom:.25rem}
+.st-key-character_creator>[data-testid="stVerticalBlock"]{gap:0}
+.st-key-character_creator>[data-testid="stLayoutWrapper"]>[data-testid="stHorizontalBlock"]{align-items:stretch;gap:2rem}
+.st-key-character_creator>[data-testid="stLayoutWrapper"]>[data-testid="stHorizontalBlock"]>[data-testid="stColumn"]{display:flex;align-self:stretch}
+.st-key-character_creator>[data-testid="stLayoutWrapper"]>[data-testid="stHorizontalBlock"]>[data-testid="stColumn"]>[data-testid="stVerticalBlock"]{width:100%;height:100%}
+.st-key-character_creator>[data-testid="stLayoutWrapper"]>[data-testid="stHorizontalBlock"]>[data-testid="stColumn"]:first-child{position:relative;min-height:100%}
+.st-key-character_creator .st-key-avatar_preview{position:absolute;inset:0;height:100%;min-height:100%;box-sizing:border-box;display:flex;align-items:flex-start;justify-content:center;padding:28px 22px}
+.st-key-character_creator .st-key-avatar_preview>[data-testid="stVerticalBlock"]{width:100%;height:100%;display:flex;justify-content:flex-start}
+.st-key-character_creator .st-key-avatar_preview [data-testid="stImage"]{width:100%}
+.st-key-character_creator .st-key-avatar_preview img{width:100%;max-height:54vh;object-fit:contain}
+.st-key-character_creator>[data-testid="stLayoutWrapper"]>[data-testid="stHorizontalBlock"]>[data-testid="stColumn"]:nth-child(2) [data-testid="stHorizontalBlock"]{display:flex!important;flex-wrap:nowrap!important;gap:1rem!important}
+.st-key-character_creator>[data-testid="stLayoutWrapper"]>[data-testid="stHorizontalBlock"]>[data-testid="stColumn"]:nth-child(2) [data-testid="stHorizontalBlock"]>[data-testid="stColumn"]{flex:1 1 0!important;width:0!important;min-width:0!important}
+@media(min-width:701px) and (max-height:900px){
+  .stApp:has(.st-key-character_creator) .block-container{padding-top:.45rem;padding-bottom:1rem}
+  .st-key-character_creator{zoom:.80;width:125%;margin-left:0}
+  .st-key-creator_submit{position:relative;margin-top:1.25rem;margin-bottom:3.75rem;z-index:2}
+}
 button,button:hover,button:active,button:focus,
 [data-testid="stButton"],[data-testid="stFormSubmitButton"],[data-testid^="baseButton-"]{
   box-shadow:none!important;filter:none!important;text-shadow:none!important;
@@ -173,7 +193,7 @@ button,button:hover,button:active,button:focus,
 html,body,#root{margin:0!important;padding:0!important}
 @media(max-width:700px){.stApp:has(.island-cover) .st-key-cover_action{top:64svh;width:min(340px,78vw);margin:0;transform:translateX(-50%)}.stApp:has(.island-cover) .cover-copy{margin-top:3vh}}
 .cover-copy{z-index:2}
-.journey-selection-map{position:relative;width:min(1000px,94vw,calc((100svh - 96px)*1586/992));aspect-ratio:1586/992;margin:0 auto 72px;border-radius:24px;background-color:#9dd3ec;background-position:center;background-size:contain;background-repeat:no-repeat;box-shadow:0 14px 36px rgba(62,85,74,.18);overflow:hidden}.journey-day-link{position:absolute;display:block;width:10%;height:8%;border-radius:14px;transform:translate(-50%,-50%);transition:filter .2s ease,transform .2s ease}.journey-day-link.active{z-index:3;border:3px solid #fff6b8;background:rgba(255,223,105,.16);box-shadow:0 0 0 6px rgba(255,226,111,.28),0 0 28px rgba(255,245,167,.9);animation:mapPulse 1.8s ease-in-out infinite;cursor:pointer}.journey-day-link.active:hover{transform:translate(-50%,-50%) scale(1.06)}.journey-day-link.locked{z-index:2;background:rgba(66,72,63,.48);border:2px solid rgba(75,70,60,.28);cursor:not-allowed}.journey-day-link.done{z-index:2;background:rgba(255,250,216,.08);border:2px solid rgba(255,255,235,.5)}.journey-day-link.d1{left:32%;top:31%}.journey-day-link.d2{left:68%;top:31%}.journey-day-link.d3{left:51%;top:48%}.journey-day-link.d4{left:29%;top:61%}.journey-day-link.d5{left:44%;top:79%}.journey-day-link.d6{left:75%;top:64%}@keyframes mapPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.16)}}
+.journey-selection-map{position:relative;left:50%;transform:translateX(-50%);width:min(calc(100vw - 40px),calc((100svh - 40px)*1586/992));aspect-ratio:1586/992;margin:0 0 72px;border-radius:24px;background-color:#9dd3ec;background-position:center;background-size:100% 100%;background-repeat:no-repeat;box-shadow:0 14px 36px rgba(62,85,74,.18);overflow:hidden}.journey-day-link{position:absolute;display:block;width:10%;height:8%;border-radius:14px;transform:translate(-50%,-50%);transition:filter .2s ease,transform .2s ease}.journey-day-link.active{z-index:3;border:3px solid #fff6b8;background:rgba(255,223,105,.16);box-shadow:0 0 0 6px rgba(255,226,111,.28),0 0 28px rgba(255,245,167,.9);animation:mapPulse 1.8s ease-in-out infinite;cursor:pointer}.journey-day-link.active:hover{transform:translate(-50%,-50%) scale(1.06)}.journey-day-link.locked{z-index:2;background:rgba(66,72,63,.48);border:2px solid rgba(75,70,60,.28);cursor:not-allowed}.journey-day-link.done{z-index:2;background:rgba(255,250,216,.08);border:2px solid rgba(255,255,235,.5)}.journey-day-link.d1{left:32%;top:31%}.journey-day-link.d2{left:68%;top:31%}.journey-day-link.d3{left:51%;top:48%}.journey-day-link.d4{left:29%;top:61%}.journey-day-link.d5{left:44%;top:79%}.journey-day-link.d6{left:75%;top:64%}@keyframes mapPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.16)}}
 @media(max-width:700px){.journey-map,.journey-selection-map{width:min(98vw,calc((100svh - 80px)*1586/992));border-radius:12px}.journey-day-link{width:12%;height:10%;border-radius:8px}.journey-day-link.active{border-width:2px;box-shadow:0 0 0 3px rgba(255,226,111,.3),0 0 16px rgba(255,245,167,.8)}}
 .journey-day-link.locked,.journey-day-link.done{pointer-events:none}
 </style>
@@ -349,7 +369,14 @@ def avatar_asset(hair: str, outfit: str = "tee") -> str:
     return f"assets/avatar_female/preview/{safe_hair}_{safe_outfit}.png"
 
 
-def _option_sheet_tile(sheet_path: str, index: int, label: str, selected: bool, zoom: float = 1.0) -> None:
+def _option_sheet_tile(
+    sheet_path: str,
+    index: int,
+    label: str,
+    selected: bool,
+    zoom: float = 1.0,
+    position_offset: tuple[float, float] = (0.0, 0.0),
+) -> None:
     """Render one quadrant from a 2x2 user-provided option sheet."""
     artwork = _asset_data_url(sheet_path)
     # Zoom each quadrant around its own center, so differently shaped artwork
@@ -359,8 +386,8 @@ def _option_sheet_tile(sheet_path: str, index: int, label: str, selected: bool, 
     else:
         near = 50 * (1 - zoom) / (1 - 2 * zoom)
         far = 100 - near
-    x = near if index % 2 == 0 else far
-    y = near if index < 2 else far
+    x = (near if index % 2 == 0 else far) + position_offset[0]
+    y = (near if index < 2 else far) + position_offset[1]
     state = " selected" if selected else ""
     st.markdown(
         f"<div class='option-sheet-tile{state}' style=\"background-image:url('{artwork}');background-size:{200 * zoom:.2f}% {200 * zoom:.2f}%;background-position:{x:.2f}% {y:.2f}%\" role='img' aria-label='{label}'></div><div class='option-sheet-label'>{label}</div>",
@@ -376,34 +403,36 @@ def character_creator() -> dict:
     st.session_state.setdefault("avatar_bottom", "shorts")
     st.session_state.setdefault("avatar_accessory", "bag")
     st.session_state.setdefault("player_name", "小岛新住民")
-    preview, controls = st.columns([.9, 1.1], gap="large")
-    with preview:
-        with st.container(key="avatar_preview"):
-            st.image(
-                avatar_asset(st.session_state.avatar_hair, st.session_state.avatar_outfit),
-                use_container_width=True,
-            )
-    with controls:
-        st.markdown("#### 创建你的角色")
-        st.session_state.player_name = st.text_input("起个名字", value=st.session_state.player_name, max_chars=16)
-        st.markdown("<div class='creator-label'>选择发型</div>", unsafe_allow_html=True)
-        hair_cols = st.columns(4)
-        hair_zoom = [1.0, 1.04, 1.17, 1.02]
-        for index, (col, (key, label)) in enumerate(zip(hair_cols, HAIR_OPTIONS.items())):
-            with col:
-                _option_sheet_tile("assets/image2/hair-options-sheet-v2.png", index, label, st.session_state.avatar_hair == key, hair_zoom[index])
-                if st.button("已选择" if st.session_state.avatar_hair == key else "选择", key=f"hair_{key}", type="primary" if st.session_state.avatar_hair == key else "secondary", use_container_width=True):
-                    st.session_state.avatar_hair = key
-                    st.rerun()
-        st.markdown("<div class='creator-label'>选择服装</div>", unsafe_allow_html=True)
-        outfit_cols = st.columns(4)
-        outfit_zoom = [1.04, 1.0, 1.05, 1.0]
-        for index, (col, (key, label)) in enumerate(zip(outfit_cols, OUTFIT_OPTIONS.items())):
-            with col:
-                _option_sheet_tile("assets/image2/outfit-options-sheet-v2.png", index, label, st.session_state.avatar_outfit == key, outfit_zoom[index])
-                if st.button("已选择" if st.session_state.avatar_outfit == key else "选择", key=f"outfit_{key}", type="primary" if st.session_state.avatar_outfit == key else "secondary", use_container_width=True):
-                    st.session_state.avatar_outfit = key
-                    st.rerun()
+    with st.container(key="character_creator"):
+        preview, controls = st.columns([.82, 1.18], gap="large")
+        with preview:
+            with st.container(key="avatar_preview"):
+                st.image(
+                    avatar_asset(st.session_state.avatar_hair, st.session_state.avatar_outfit),
+                    use_container_width=True,
+                )
+        with controls:
+            st.markdown("#### 创建你的角色")
+            st.session_state.player_name = st.text_input("起个名字", value=st.session_state.player_name, max_chars=16)
+            st.markdown("<div class='creator-label'>选择发型</div>", unsafe_allow_html=True)
+            hair_cols = st.columns(4)
+            hair_zoom = [1.0, 1.04, 1.12, 1.02]
+            hair_offsets = [(0, 0), (-2.5, 0), (0, -5.0), (2.5, 0)]
+            for index, (col, (key, label)) in enumerate(zip(hair_cols, HAIR_OPTIONS.items())):
+                with col:
+                    _option_sheet_tile("assets/image2/hair-options-sheet-v2.png", index, label, st.session_state.avatar_hair == key, hair_zoom[index], hair_offsets[index])
+                    if st.button("已选择" if st.session_state.avatar_hair == key else "选择", key=f"hair_{key}", type="primary" if st.session_state.avatar_hair == key else "secondary", use_container_width=True):
+                        st.session_state.avatar_hair = key
+                        st.rerun()
+            st.markdown("<div class='creator-label'>选择服装</div>", unsafe_allow_html=True)
+            outfit_cols = st.columns(4)
+            outfit_zoom = [1.04, 1.0, 1.05, 1.0]
+            for index, (col, (key, label)) in enumerate(zip(outfit_cols, OUTFIT_OPTIONS.items())):
+                with col:
+                    _option_sheet_tile("assets/image2/outfit-options-sheet-v2.png", index, label, st.session_state.avatar_outfit == key, outfit_zoom[index])
+                    if st.button("已选择" if st.session_state.avatar_outfit == key else "选择", key=f"outfit_{key}", type="primary" if st.session_state.avatar_outfit == key else "secondary", use_container_width=True):
+                        st.session_state.avatar_outfit = key
+                        st.rerun()
     return {
         "hair": st.session_state.avatar_hair,
         "hair_color": st.session_state.avatar_hair_color,

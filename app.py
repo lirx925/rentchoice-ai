@@ -194,13 +194,14 @@ def intro_page() -> None:
 
 def welcome() -> None:
     progress_dots(1, 12)
-    scene_heading("创建你的角色", "设计你的小岛形象", "选择发型和服装。")
+    scene_heading("创建你的角色", "设计你的小岛形象", "")
     character_creator()
-    if st.button("创建完成，开始租房之旅 →", type="primary", use_container_width=True):
-        st.session_state.participant_id = str(uuid.uuid4())
-        st.session_state.treatment_group = assign_treatment(st.session_state.participant_id)
-        st.query_params["participant"] = st.session_state.participant_id
-        go("preferences_basic")
+    with st.container(key="creator_submit"):
+        if st.button("创建完成，开始租房之旅 →", type="primary", use_container_width=True):
+            st.session_state.participant_id = str(uuid.uuid4())
+            st.session_state.treatment_group = assign_treatment(st.session_state.participant_id)
+            st.query_params["participant"] = st.session_state.participant_id
+            go("preferences_basic")
 
 
 def preferences_basic_page() -> None:
