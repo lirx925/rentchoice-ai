@@ -131,8 +131,9 @@ button[kind="secondary"]{background:#fffefa!important;border-color:#b5a99d!impor
 @keyframes sunGlow{0%,100%{opacity:.55;transform:scale(1)}50%{opacity:.95;transform:scale(1.04)}}
 @keyframes twinkle{0%,100%{opacity:.35;transform:scale(.75) rotate(0)}50%{opacity:1;transform:scale(1.2) rotate(18deg)}}
 /* 2026-07 cover and housing-flow refinements */
-.island-cover{width:100%;height:auto;aspect-ratio:4/3;min-height:0;background-size:100% 100%;animation:coverReveal .7s ease-out both}
-.st-key-cover_action{margin:-27% auto 0;transform:none}
+.island-cover{width:100vw;height:100svh;min-height:640px;aspect-ratio:auto;margin-left:calc(50% - 50vw);border-radius:0;background-size:cover;background-position:center center;animation:coverReveal .7s ease-out both}
+.cover-copy{width:min(580px,50vw);margin-top:3vh;background:transparent}.cover-title-art{display:block;width:100%;height:auto;margin:0 auto;mix-blend-mode:normal;filter:drop-shadow(0 7px 8px rgba(93,65,30,.12));animation:titleFloat 4.8s ease-in-out infinite}
+.st-key-cover_action{margin:-38svh auto 0;transform:none}
 .game-topbar{height:58px;margin:0 0 12px;padding:0;border:0;background:transparent;box-shadow:none}
 .game-location{position:fixed;z-index:990;left:20px;top:16px;padding:8px 14px;border:1px solid #dbc5a2;border-radius:15px;background:rgba(255,248,225,.94);box-shadow:0 4px 14px rgba(94,78,65,.08);font-size:.82rem;line-height:1.35}.game-location b{font-size:1rem}
 .game-stats{position:fixed;z-index:990;right:20px;top:16px;display:flex;gap:7px;align-items:center}.game-stat{padding:7px 11px;border:1px solid #e1c99d;border-radius:16px;background:rgba(255,243,204,.94);font-size:.78rem;box-shadow:0 4px 12px rgba(94,78,65,.07)}
@@ -140,7 +141,7 @@ button[kind="secondary"]{background:#fffefa!important;border-color:#b5a99d!impor
 .game-card{padding:18px;min-height:270px}.game-card h4{font-size:1rem!important;line-height:1.45}
 .property-detail-shell{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;padding:22px;border:1.5px solid #dec8a4;border-radius:25px;background:#fff8e9;box-shadow:0 10px 28px rgba(75,55,35,.1)}
 .property-detail-shell .detail-art{height:auto;min-height:390px;border-radius:20px;box-shadow:none}.property-copy{padding:4px 5px}.property-copy h2{font-size:1.55rem;margin:6px 0 3px}.property-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:16px 0}.property-meta span{padding:8px 10px;border-radius:11px;background:#f7edd7;font-size:.82rem}.property-review{border-top:1px dashed #d7be96;margin-top:14px;padding-top:12px;line-height:1.75}
-@media(max-width:700px){.island-cover{height:auto;min-height:0;aspect-ratio:4/3;background-size:100% 100%;animation:coverReveal .7s ease-out both}.cover-copy{margin-top:8%}.st-key-cover_action{margin:-27% auto 0;transform:none}.game-location{position:relative;left:auto;top:auto;display:inline-block}.game-stats{position:relative;right:auto;top:auto;justify-content:flex-end}.game-brand{right:12px;bottom:72px}.property-detail-shell{grid-template-columns:1fr;padding:14px}.property-detail-shell .detail-art{min-height:260px}}
+@media(max-width:700px){.island-cover{width:100vw;height:100svh;min-height:600px;aspect-ratio:auto;background-size:cover;background-position:center center}.cover-copy{width:74vw;margin-top:5vh}.cover-title-art{width:100%;margin:0 auto}.st-key-cover_action{margin:-39svh auto 0;transform:none}.game-location{position:relative;left:auto;top:auto;display:inline-block}.game-stats{position:relative;right:auto;top:auto;justify-content:flex-end}.game-brand{right:12px;bottom:72px}.property-detail-shell{grid-template-columns:1fr;padding:14px}.property-detail-shell .detail-art{min-height:260px}}
 </style>
 """
 
@@ -215,14 +216,14 @@ def _asset_data_url(path: str) -> str:
 
 
 def title_scene() -> None:
-    """Render the centered opening cover with code-rendered Chinese text."""
+    """Render the opening cover with separate responsive background and title art."""
     cover = _asset_data_url("assets/image2/rent-island-cover-v2.png")
+    title_art = _asset_data_url("assets/image2/rent-island-title-transparent-v1.png")
     st.markdown(
         f"""
         <div class="island-cover" style="background-image:url('{cover}')">
           <div class="cover-copy">
-            <div class="narrative-title"><span class="title-orange">租</span><span class="title-gold">房</span><span class="title-green">小岛</span></div>
-            <div class="narrative-subtitle">找到你理想的小窝</div>
+            <img class="cover-title-art" src="{title_art}" alt="租房小岛，找到你理想的小窝">
           </div>
         </div>
         """,
