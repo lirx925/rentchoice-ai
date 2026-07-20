@@ -16,13 +16,14 @@ from src.data_loader import eligible_listings, load_listings
 from src.experiment import TOTAL_ROUNDS, assign_treatment, build_choice_sets, welfare_metrics
 from src.explanations import optional_llm_explanation
 from src.recommender import score_listings
-from src.storage import save_choice, save_participant, save_post_survey, storage_mode
+from src.storage import load_participant_progress, save_choice, save_participant, save_post_survey, storage_mode
 from src.game_ui import (
     inject_game_css, quest_log, title_scene, journey_map, scene_heading, progress_dots,
     character_creator, game_topbar, day_route, day_summary_card, character_identity_card,
     star_picker, game_card, confetti_burst, ROUND_STORY, landlord_for,
     hud_bar, dialogue_box, compute_badges, badge_toast, badge_shelf,
     level_clear_banner, identity_card, sound_ping, community_hero, property_detail, nest_room,
+    interactive_journey_map,
 )
 
 load_dotenv()
@@ -60,6 +61,66 @@ def init_state() -> None:
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
+
+
+def restore_reconnected_session() -> None:
+    """Rehydrate a new Streamlit session from the durable participant URL."""
+    if st.session_state.participant_id:
+        return
+    participant_id = str(st.query_params.get("participant", "")).strip()
+    try:
+        uuid.UUID(participant_id)
+    except (ValueError, AttributeError):
+        return
+    try:
+        progress = load_participant_progress(participant_id)
+    except Exception:
+        # A transient backend failure must not put the app into a reconnect loop.
+        # Keep the participant URL intact so the next rerun can retry restoration.
+        return
+    if not progress:
+        return
+    participant = progress["participant"]
+    preference_keys = {
+        "budget_max", "ideal_rent", "destination_district", "min_area",
+        "rental_type_preference", "importance_rent", "importance_location",
+        "importance_area", "importance_metro", "prior_rental_experience",
+        "initial_ai_trust", "participant_status",
+    }
+    preferences = {key: participant[key] for key in preference_keys if key in participant and not pd.isna(participant[key])}
+    required_preferences = {
+        "budget_max", "ideal_rent", "destination_district", "min_area",
+        "rental_type_preference", "importance_rent", "importance_location",
+        "importance_area", "importance_metro",
+    }
+    if not required_preferences.issubset(preferences) or not participant.get("treatment_group"):
+        return
+    # Older persisted rows did not include this UI-only switch.
+    preferences["metro_priority"] = True
+    choices = progress["choices"]
+    completed_rounds = {
+        int(row["round_number"])
+        for row in choices
+        if 1 <= int(row["round_number"]) <= TOTAL_ROUNDS
+    }
+    next_round = next((day for day in range(1, TOTAL_ROUNDS + 1) if day not in completed_rounds), TOTAL_ROUNDS + 1)
+    st.session_state.participant_id = participant_id
+    st.session_state.treatment_group = str(participant["treatment_group"])
+    st.session_state.preferences = preferences
+    st.session_state.preference_draft = {key: preferences[key] for key in (
+        "budget_max", "ideal_rent", "destination_district", "min_area",
+        "rental_type_preference", "metro_priority",
+    ) if key in preferences}
+    st.session_state.choice_sets = build_choice_sets(listings_data(), participant_id)
+    st.session_state.choices = choices
+    st.session_state.round_number = next_round
+    st.session_state.round_started_at = time.time()
+    st.session_state.choice_stage = "pick"
+    st.session_state.coins = len(choices) * COINS_PER_ROUND
+    st.session_state.badges_earned = compute_badges(choices, preferences)
+    st.session_state.survey_done = progress["survey_done"]
+    st.session_state.stage = "results" if progress["survey_done"] else "survey" if next_round > TOTAL_ROUNDS else "journey"
+    st.session_state.pending_toast = []
 
 
 @st.cache_data
@@ -109,16 +170,16 @@ def cover_page() -> None:
 
 
 def intro_page() -> None:
-    progress_dots(0, 12)
-    scene_heading(
-        "来自租房小岛的邀请函",
-        "在岛上生活六天",
-        "每天认识一个社区、查看三套房源。没有标准答案，只有越来越清晰的生活偏好。",
-    )
-    journey_map()
-    st.markdown("<div class='story-box' style='max-width:720px;margin:0 auto 18px;'>探索小岛 → 认识社区 → 体验房子 → 发现偏好 → 建立属于自己的小窝。<br><small>房源使用租赁挂牌数据快照（非成交记录），仅用于匿名研究体验。</small></div>", unsafe_allow_html=True)
-    if st.button("创建我的岛民角色 →", type="primary", use_container_width=True):
-        go("welcome")
+    with st.container(key="intro_page"):
+        progress_dots(0, 12)
+        scene_heading(
+            "来自租房小岛的邀请函",
+            "在岛上生活六天",
+            "每天认识一个社区、查看三套房源。没有标准答案，只有越来越清晰的生活偏好。",
+        )
+        st.markdown("<div style='max-width:720px;margin:20px auto 28px;text-align:center;line-height:2;color:#806b52'>探索小岛 → 认识社区 → 体验房子 → 发现偏好 → 建立属于自己的小窝。<br><small>房源使用租赁挂牌数据快照（非成交记录），仅用于匿名研究体验。</small></div>", unsafe_allow_html=True)
+        if st.button("创建我的岛民角色 →", type="primary", use_container_width=True):
+            go("welcome")
 
 
 def welcome() -> None:
@@ -132,6 +193,7 @@ def welcome() -> None:
     if st.button("创建完成，开始租房之旅 →", type="primary", disabled=not consent, use_container_width=True):
         st.session_state.participant_id = str(uuid.uuid4())
         st.session_state.treatment_group = assign_treatment(st.session_state.participant_id)
+        st.query_params["participant"] = st.session_state.participant_id
         go("preferences_basic")
 
 
@@ -221,20 +283,15 @@ def journey_page() -> None:
     if r > TOTAL_ROUNDS:
         go("survey")
         return
-    game_topbar(r, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
-    day_route(r, TOTAL_ROUNDS)
-    title, story = ROUND_STORY.get(r, (f"第 {r} 站", "新的房源正在等待你。"))
-    scene_heading(f"第 {r} 天 · 我的租房之旅", title, story)
-    community_hero(r, title, story)
-    st.markdown(
-        f"<div class='story-box' style='max-width:760px;margin:0 auto 12px;text-align:center;'>今日目标：查看 3 套房源，完成 1 次选择，并记录你的真实感受。</div>",
-        unsafe_allow_html=True,
-    )
-    if st.button(f"进入第 {r} 天 →", type="primary", use_container_width=True):
+    selected_day = st.query_params.get("map_day")
+    if selected_day and str(selected_day) == str(r):
+        del st.query_params["map_day"]
         st.session_state.round_started_at = time.time()
         st.session_state.choice_stage = "pick"
         go("choice")
-    render_bottom_navigation("map")
+        return
+    progress_dots(r + 2, 12)
+    interactive_journey_map(r)
 
 
 def choice_page() -> None:
@@ -406,12 +463,12 @@ def free_explore_page() -> None:
     game_topbar(TOTAL_ROUNDS, TOTAL_ROUNDS, st.session_state.coins, st.session_state.player_name, st.session_state.avatar_accessory)
     day_route(TOTAL_ROUNDS, TOTAL_ROUNDS)
     scene_heading("第 6 天 · 自由探索", "小岛现在完全向你开放", "六轮看房已经完成。回访喜欢的社区、整理收藏，再完成最后的探索任务。")
-    areas = [(1,"海湾社区"),(2,"绿野社区"),(3,"岛中央城区"),(4,"旧街社区"),(5,"湖畔新区")]
-    cols = st.columns(5)
+    areas = [(day, ROUND_STORY[day][0]) for day in range(1, TOTAL_ROUNDS + 1)]
+    cols = st.columns(len(areas))
     for col, (day, name) in zip(cols, areas):
         if col.button(name, key=f"free_{day}", type="primary" if st.session_state.free_area == day else "secondary", use_container_width=True):
             st.session_state.free_area = day; st.rerun()
-    day, name = areas[st.session_state.free_area - 1]
+    day, name = next((area for area in areas if area[0] == st.session_state.free_area), areas[0])
     community_hero(day, name, "自由回访：这里不会新增实验选择，可以安心查看与回忆。")
     c1, c2, c3 = st.columns(3)
     c1.metric("看过的房子", len(st.session_state.viewed_homes))
@@ -526,11 +583,14 @@ def results_page() -> None:
     top=sorted(names,key=lambda k:st.session_state.preferences[k],reverse=True)[:3]
     st.success(f"你最重视的三个属性是：{'、'.join(names[k] for k in top)}。以上结果仅根据本次声明偏好和模拟选择计算，不代表真实市场中的最优选择。")
     if st.button("重新开始（不会覆盖已保存记录）"):
+        if "participant" in st.query_params:
+            del st.query_params["participant"]
         for key in list(st.session_state.keys()): del st.session_state[key]
         st.rerun()
 
 
 init_state()
+restore_reconnected_session()
 render_back_button()
 try:
     {"cover":cover_page,"intro":intro_page,"welcome":welcome,

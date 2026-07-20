@@ -67,3 +67,40 @@ def load_all_results() -> dict[str, pd.DataFrame]:
         try: return {t: pd.DataFrame(client.table(t).select("*").execute().data) for t in FILES}
         except Exception: pass
     return {t: pd.read_csv(p) if p.exists() and p.stat().st_size else pd.DataFrame() for t,p in FILES.items()}
+
+def load_participant_progress(participant_id: str) -> dict | None:
+    """Load the persisted state needed to resume an interrupted session."""
+    data = load_all_results()
+    participants = data["participants"]
+    if participants.empty or "participant_id" not in participants:
+        return None
+    matches = participants[participants["participant_id"].astype(str) == str(participant_id)]
+    if matches.empty:
+        return None
+    participant = matches.iloc[-1].to_dict()
+    choices = data["choices"]
+    if not choices.empty and "participant_id" in choices:
+        choices = choices[choices["participant_id"].astype(str) == str(participant_id)]
+        if "round_number" in choices:
+            # Supabase/local data created before round-level upserts were added may
+            # contain duplicates.  Resume from the newest value for each round.
+            choices = choices.copy()
+            choices["round_number"] = pd.to_numeric(choices["round_number"], errors="coerce")
+            choices = choices.dropna(subset=["round_number"])
+            choices["round_number"] = choices["round_number"].astype(int)
+            if "created_at" in choices:
+                choices = choices.sort_values("created_at")
+            choices = choices.drop_duplicates("round_number", keep="last").sort_values("round_number")
+    else:
+        choices = pd.DataFrame()
+    survey = data["post_survey"]
+    survey_done = (
+        not survey.empty
+        and "participant_id" in survey
+        and survey["participant_id"].astype(str).eq(str(participant_id)).any()
+    )
+    return {
+        "participant": participant,
+        "choices": choices.to_dict("records"),
+        "survey_done": bool(survey_done),
+    }

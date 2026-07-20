@@ -29,6 +29,18 @@ def main():
         old_files=storage.FILES; storage.DATA_DIR=Path(tmp); storage.FILES={k:Path(tmp)/f"{k}.csv" for k in old_files}
         storage.save_choice({"participant_id":"p","round_number":1,"chosen_listing_id":"R001"}); storage.save_choice({"participant_id":"p","round_number":1,"chosen_listing_id":"R002"})
         assert len(storage.load_all_results()["choices"])==1
+        storage.save_participant({"participant_id":"p","treatment_group":"control","consent":True})
+        progress = storage.load_participant_progress("p")
+        assert progress and progress["choices"][0]["chosen_listing_id"] == "R002"
+        assert storage.load_participant_progress("missing") is None
+        # Old append-only datasets can have duplicate and malformed rounds.
+        pd.DataFrame([
+            {"participant_id":"p","round_number":2,"chosen_listing_id":"R003","created_at":"2026-01-01"},
+            {"participant_id":"p","round_number":2,"chosen_listing_id":"R004","created_at":"2026-01-02"},
+            {"participant_id":"p","round_number":"bad","chosen_listing_id":"R005","created_at":"2026-01-03"},
+        ]).to_csv(storage.FILES["choices"], index=False)
+        progress = storage.load_participant_progress("p")
+        assert len(progress["choices"]) == 1 and progress["choices"][0]["chosen_listing_id"] == "R004"
         storage.FILES=old_files
     print("PASS: listings, scores, choice sets, groups, welfare, explanation, local idempotent storage")
 

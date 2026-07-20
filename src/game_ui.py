@@ -118,6 +118,9 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 button[kind="primary"]{background:var(--accent)!important;color:#fffaf5!important;border-color:#bd5942!important;box-shadow:3px 4px 0 #e8b9aa!important}
 button[kind="secondary"]{background:#fffefa!important;border-color:#b5a99d!important;color:var(--ink)!important}
 .stProgress>div>div>div>div{background:var(--accent)}
+.st-key-intro_page{min-height:calc(100svh - 5.5rem);display:flex;align-items:center}
+.st-key-intro_page>[data-testid="stVerticalBlock"]{width:100%}
+button,button:hover,button:active,button:focus{box-shadow:none!important}
 @media(min-width:900px) and (max-height:820px){.block-container{padding-top:.55rem}.roofscape{height:112px;margin-bottom:.4rem}.narrative-stage{min-height:57vh}.island-cover{min-height:68vh}.cover-copy{padding:18px 38px}.narrative-title{font-size:5.4rem}.scene-title{font-size:2.55rem}.scene-copy{margin-bottom:.45rem}.room-art{height:105px}.game-card{min-height:260px;padding:10px 13px}.game-card p{margin:.3rem 0!important;line-height:1.45!important}.hud-row{margin-bottom:7px}.story-box{padding:9px 14px}}
 @media(max-width:700px){.block-container{padding-top:.45rem}.island-cover{height:calc(100vh - .9rem);min-height:600px;border-radius:20px;background-position:center}.cover-copy{margin-top:12vh;width:96%}.narrative-title{font-size:clamp(3.6rem,18vw,5.2rem)}.narrative-subtitle{margin-top:16px;padding:8px 24px 10px;font-size:1.45rem}.st-key-cover_action{width:min(340px,78vw);margin:-39vh auto 0}.st-key-cover_action button{min-height:4.1rem!important;font-size:1.65rem!important}.st-key-cover_settings{left:12px;top:12px;width:98px}.narrative-stage{min-height:72vh}.roofscape{height:120px}.game-card{min-height:0}.progress-dots{bottom:8px}.creator-shell,.day-summary{grid-template-columns:1fr}.creator-preview img{max-height:45vh}.game-topbar{align-items:flex-start}.game-stats{flex-wrap:wrap;justify-content:flex-end}.day-summary{margin-bottom:80px}}
 @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
@@ -142,6 +145,22 @@ button[kind="secondary"]{background:#fffefa!important;border-color:#b5a99d!impor
 .property-detail-shell{display:grid;grid-template-columns:1.05fr .95fr;gap:24px;padding:22px;border:1.5px solid #dec8a4;border-radius:25px;background:#fff8e9;box-shadow:0 10px 28px rgba(75,55,35,.1)}
 .property-detail-shell .detail-art{height:auto;min-height:390px;border-radius:20px;box-shadow:none}.property-copy{padding:4px 5px}.property-copy h2{font-size:1.55rem;margin:6px 0 3px}.property-meta{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin:16px 0}.property-meta span{padding:8px 10px;border-radius:11px;background:#f7edd7;font-size:.82rem}.property-review{border-top:1px dashed #d7be96;margin-top:14px;padding-top:12px;line-height:1.75}
 @media(max-width:700px){.island-cover{width:100vw;height:100svh;min-height:600px;aspect-ratio:auto;background-size:cover;background-position:center center}.cover-copy{width:74vw;margin-top:5vh}.cover-title-art{width:100%;margin:0 auto}.st-key-cover_action{margin:-39svh auto 0;transform:none}.game-location{position:relative;left:auto;top:auto;display:inline-block}.game-stats{position:relative;right:auto;top:auto;justify-content:flex-end}.game-brand{right:12px;bottom:72px}.property-detail-shell{grid-template-columns:1fr;padding:14px}.property-detail-shell .detail-art{min-height:260px}}
+/* The cover is a true single-screen scene: no Streamlit gutters or overflow. */
+.stApp:has(.island-cover),
+.stAppViewContainer:has(.island-cover),
+[data-testid="stAppViewContainer"]:has(.island-cover),
+[data-testid="stMain"]:has(.island-cover){height:100svh!important;min-height:100svh!important;overflow:hidden!important}
+.stApp:has(.island-cover) .block-container{width:100%!important;max-width:none!important;height:100svh!important;padding:0!important;margin:0!important;overflow:hidden!important}
+.island-cover{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;min-height:0!important;margin:0!important;border-radius:0!important;background-color:#55b7d4!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important}
+.stApp:has(.island-cover) .st-key-cover_action{position:fixed;z-index:1003;left:50%;top:66svh;width:min(390px,76vw);margin:0;transform:translateX(-50%)}
+.stApp:has(.island-cover) .st-key-cover_settings{position:fixed}
+.st-key-cover_action button,.st-key-cover_action button p{font-size:clamp(1.55rem,2.25vw,2rem)!important;font-weight:600!important;line-height:1.15!important}
+html,body,#root{margin:0!important;padding:0!important}
+@media(max-width:700px){.stApp:has(.island-cover) .st-key-cover_action{top:64svh;width:min(340px,78vw);margin:0;transform:translateX(-50%)}.stApp:has(.island-cover) .cover-copy{margin-top:3vh}}
+.cover-copy{z-index:2}
+.journey-selection-map{position:relative;width:min(1000px,94vw);aspect-ratio:4/3;margin:0 auto 72px;border-radius:24px;background-position:center;background-size:cover;box-shadow:0 14px 36px rgba(62,85,74,.18);overflow:hidden}.journey-day-link{position:absolute;display:block;width:13%;height:9%;border-radius:14px;transform:translate(-50%,-50%);transition:filter .2s ease,transform .2s ease}.journey-day-link.active{z-index:3;border:3px solid #fff6b8;background:rgba(255,223,105,.16);box-shadow:0 0 0 6px rgba(255,226,111,.28),0 0 28px rgba(255,245,167,.9);animation:mapPulse 1.8s ease-in-out infinite;cursor:pointer}.journey-day-link.active:hover{transform:translate(-50%,-50%) scale(1.06)}.journey-day-link.locked{z-index:2;background:rgba(66,72,63,.48);border:2px solid rgba(75,70,60,.28);cursor:not-allowed}.journey-day-link.done{z-index:2;background:rgba(255,250,216,.08);border:2px solid rgba(255,255,235,.5)}.journey-day-link.d1{left:25.5%;top:31%}.journey-day-link.d2{left:72%;top:34%}.journey-day-link.d3{left:50.5%;top:51%}.journey-day-link.d4{left:20%;top:66%}.journey-day-link.d5{left:41%;top:83%}.journey-day-link.d6{left:79%;top:68%}@keyframes mapPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.16)}}
+@media(max-width:700px){.journey-selection-map{width:98vw;border-radius:12px}.journey-day-link{width:17%;height:11%;border-radius:8px}.journey-day-link.active{border-width:2px;box-shadow:0 0 0 3px rgba(255,226,111,.3),0 0 16px rgba(255,245,167,.8)}}
+.journey-day-link.locked,.journey-day-link.done{pointer-events:none}
 </style>
 """
 
@@ -151,7 +170,7 @@ ROUND_STORY = {
     3: ("岛中央城区", "商店集中、交通方便，也拥有更热闹的人流。"),
     4: ("旧街社区", "老建筑与熟悉的邻里，让生活成本更从容。"),
     5: ("湖畔新区", "新设施与湖景并存，是整洁舒适的新生活。"),
-    6: ("自由探索日前站", "完成最后三套看房后，小岛将向你完全开放。"),
+    6: ("晨光社区", "海风、晨光和码头新居交织成旅程的最后一站。"),
 }
 
 COMMUNITY_ASSETS = {
@@ -216,11 +235,19 @@ def _asset_data_url(path: str) -> str:
 
 
 def title_scene() -> None:
-    """Render the opening cover with separate responsive background and title art."""
+    """Render the opening cover with one responsive background image."""
     cover = _asset_data_url("assets/image2/rent-island-cover-v2.png")
     title_art = _asset_data_url("assets/image2/rent-island-title-transparent-v1.png")
+    settings_art = _asset_data_url("assets/image2/settings-sign-transparent-v1.png")
     st.markdown(
         f"""
+        <style>
+        .st-key-cover_settings{{left:14px!important;top:0!important;width:112px!important;}}
+        .st-key-cover_settings button{{width:112px!important;height:69px!important;min-height:69px!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent url('{settings_art}') center/contain no-repeat!important;box-shadow:none!important;color:transparent!important;}}
+        .st-key-cover_settings button p{{color:transparent!important;font-size:0!important;}}
+        .st-key-cover_settings button:hover{{transform:translateY(3px) scale(1.03)!important;box-shadow:none!important;}}
+        @media(max-width:700px){{.st-key-cover_settings{{left:6px!important;width:92px!important}}.st-key-cover_settings button{{width:92px!important;height:57px!important;min-height:57px!important}}}}
+        </style>
         <div class="island-cover" style="background-image:url('{cover}')">
           <div class="cover-copy">
             <img class="cover-title-art" src="{title_art}" alt="租房小岛，找到你理想的小窝">
@@ -235,6 +262,26 @@ def journey_map() -> None:
     artwork = _asset_data_url("assets/image2/rental-journey-map-v1.png")
     st.markdown(
         f"<div class='journey-map' role='img' aria-label='六个租房社区组成的小岛地图' style=\"background-image:url('{artwork}')\"></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def interactive_journey_map(active_day: int) -> None:
+    """Clickable six-day island map; only the current day is enabled."""
+    artwork = _asset_data_url("assets/image2/rental-journey-map-v2.png")
+    links = []
+    for day in range(1, 7):
+        state = "active" if day == active_day else "done" if day < active_day else "locked"
+        participant = st.session_state.get("participant_id", "")
+        href = f"?participant={participant}&map_day={day}" if day == active_day else "#"
+        label = ROUND_STORY[day][0]
+        links.append(
+            f'<a class="journey-day-link d{day} {state}" href="{href}" target="_self" '
+            f'aria-label="第 {day} 天 {label}" title="第 {day} 天 · {label}"></a>'
+        )
+    st.markdown(
+        f'<div class="journey-selection-map" role="img" aria-label="我的租房之旅" '
+        f'style="background-image:url(\'{artwork}\')">{"".join(links)}</div>',
         unsafe_allow_html=True,
     )
 
