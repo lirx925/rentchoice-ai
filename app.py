@@ -58,6 +58,7 @@ def init_state() -> None:
         "sound_on": False, "dialogue_page": 1, "clear_coins_earned": 0,
         "stage_history": [], "favorites": [], "viewed_homes": [], "contacted_landlords": [],
         "lifestyle": "平衡生活", "home_wishes": [], "nest_theme": "ocean", "free_area": 1,
+        "consent_accepted": False,
     }
     for key, value in defaults.items():
         st.session_state.setdefault(key, value)
@@ -177,20 +178,25 @@ def intro_page() -> None:
             "在岛上生活六天",
             "每天认识一个社区、查看三套房源。没有标准答案，只有越来越清晰的生活偏好。",
         )
-        st.markdown("<div style='max-width:720px;margin:20px auto 28px;text-align:center;line-height:2;color:#806b52'>探索小岛 → 认识社区 → 体验房子 → 发现偏好 → 建立属于自己的小窝。<br><small>房源使用租赁挂牌数据快照（非成交记录），仅用于匿名研究体验。</small></div>", unsafe_allow_html=True)
-        if st.button("创建我的岛民角色 →", type="primary", use_container_width=True):
-            go("welcome")
+        st.markdown("<div style='max-width:720px;margin:20px auto 18px;text-align:center;line-height:2;color:#806b52'>探索小岛 → 认识社区 → 体验房子 → 发现偏好 → 建立属于自己的小窝</div>", unsafe_allow_html=True)
+        with st.container(key="intro_footer"):
+            st.caption("说明：房源使用租赁挂牌数据快照（非成交记录），仅用于匿名研究体验")
+            st.caption("约 8–12 分钟 · 不收集真实姓名、电话、邮箱或精确住址 · 可随时关闭退出")
+            st.session_state.sound_on = st.toggle("开启轻量音效", value=st.session_state.sound_on)
+            st.session_state.consent_accepted = st.checkbox(
+                "我已阅读以上说明，同意匿名记录我的选择数据",
+                value=st.session_state.consent_accepted,
+            )
+        with st.container(key="intro_create_action"):
+            if st.button("创建我的岛民角色 →", type="primary", disabled=not st.session_state.consent_accepted, use_container_width=True):
+                go("welcome")
 
 
 def welcome() -> None:
     progress_dots(1, 12)
-    scene_heading("创建你的角色", "设计你的小岛形象", "选择发型、发色、服装和下装。")
+    scene_heading("创建你的角色", "设计你的小岛形象", "选择发型和服装。")
     character_creator()
-    st.info("房源来自上海租赁挂牌数据快照，并非实时房源或成交记录；本体验不构成真实租房建议。")
-    st.caption("约 8–12 分钟 · 不收集真实姓名、电话、邮箱或精确住址 · 可随时关闭退出")
-    st.session_state.sound_on = st.toggle("🔊 开启轻量音效（可选，浏览器可能会拦截自动播放）", value=st.session_state.sound_on)
-    consent = st.checkbox("我已阅读以上说明，同意匿名记录我的选择数据")
-    if st.button("创建完成，开始租房之旅 →", type="primary", disabled=not consent, use_container_width=True):
+    if st.button("创建完成，开始租房之旅 →", type="primary", use_container_width=True):
         st.session_state.participant_id = str(uuid.uuid4())
         st.session_state.treatment_group = assign_treatment(st.session_state.participant_id)
         st.query_params["participant"] = st.session_state.participant_id
@@ -236,13 +242,27 @@ def preferences_detail_page() -> None:
     scene_heading("第一幕 · 你的地图", "再排一次优先顺序", "同样的房源，不同的人会看见不同的答案。拖动滑块，表达你真正的取舍。")
     with st.form("preferences_detail_form"):
         st.markdown("##### 你向往怎样的岛屿生活？")
-        lifestyle = st.radio("生活方式", ["安静生活", "热闹生活", "平衡生活"], horizontal=True, index=2)
+        lifestyle = st.radio(
+            "生活方式",
+            ["安静生活", "热闹生活", "平衡生活"],
+            horizontal=True,
+            index=2,
+            label_visibility="collapsed",
+        )
         home_wishes = st.multiselect("房屋偏好（可多选）", ["大空间", "小而温馨", "阳光充足", "有厨房", "有阳台", "可以养宠物"], default=["阳光充足", "有厨房"])
-        st.markdown("##### 各因素重要性（1=不重要，5=非常重要）")
+        st.markdown("##### 各因素重要性")
+        st.caption("1 = 不重要，5 = 非常重要")
         cols = st.columns(4)
         fields = [("租金","importance_rent"),("目的地区域匹配","importance_location"),("面积","importance_area"),("地铁距离","importance_metro")]
         vals = {key: cols[i%4].slider(label,1,5,4 if i<3 else 3,key=key) for i,(label,key) in enumerate(fields)}
-        prior = st.radio("是否有租房经历？", ["是", "否"], horizontal=True)
+        st.markdown("##### 是否有租房经历？")
+        with st.container(key="prior_experience_plain"):
+            prior = st.radio(
+                "是否有租房经历？",
+                ["是", "否"],
+                horizontal=True,
+                label_visibility="collapsed",
+            )
         trust = st.slider("🤝 对 AI 推荐的初始信任程度", 1, 7, 4)
         status = st.selectbox("当前身份", ["本科生", "研究生", "实习生", "已工作", "其他"])
         submitted = st.form_submit_button("背好包，出发 →", type="primary", use_container_width=True)

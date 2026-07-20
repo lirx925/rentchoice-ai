@@ -23,7 +23,7 @@ GAME_CSS = """
 <style>
 :root{
   --paper:#fff8e8; --paper-2:#f3e3bd; --ink:#604a32; --muted:#86735d;
-  --line:#c7a977; --accent:#ed9b3b; --accent-soft:#ffe1a9; --green:#78994e;
+  --line:#c7a977; --accent:#efb84a; --accent-soft:#fbe8b9; --green:#78994e;
   --mist:var(--muted); --amber:var(--accent); --coral:var(--accent);
 }
 .stApp{background:radial-gradient(circle at 50% 0,#fffdf4 0,#fff8e8 55%,#f6e8c9 100%); color:var(--ink);}
@@ -45,7 +45,7 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 .roof.r1{left:5%;}.roof.r2{left:29%; height:105px; width:155px}.roof.r3{right:26%; height:88px}.roof.r4{right:3%; height:118px;width:145px}
 .float-key{position:absolute; font-size:2rem; color:var(--accent); animation:float 2.8s ease-in-out infinite;}.k1{left:17%;top:13px}.k2{right:18%;top:38px;animation-delay:.8s}.k3{left:48%;top:2px;animation-delay:1.4s}
 .scene-shell{max-width:900px; margin:0 auto; animation:scenein .42s cubic-bezier(.2,.8,.2,1);}
-.journey-map{height:clamp(210px,42vh,430px);border-radius:24px;border:1.5px solid #b8a58f;background-position:center;background-size:cover;box-shadow:0 12px 34px rgba(91,74,57,.14);margin:.5rem auto 1rem;position:relative;overflow:hidden}.journey-map:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(52,76,55,.2))}
+.journey-map{width:min(1000px,94vw,calc((100svh - 96px)*1586/992));aspect-ratio:1586/992;border-radius:24px;border:1.5px solid #b8a58f;background-color:#9dd3ec;background-position:center;background-size:contain;background-repeat:no-repeat;box-shadow:0 12px 34px rgba(91,74,57,.14);margin:.5rem auto 1rem;position:relative;overflow:hidden}.journey-map:after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 60%,rgba(52,76,55,.12))}
 .game-topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 10px;padding:9px 14px;border:1px solid #dbc5a2;border-radius:18px;background:rgba(255,248,225,.94);box-shadow:0 4px 14px rgba(94,78,65,.08)}.game-brand{font-family:'Arial Rounded MT Bold','Noto Sans SC',sans-serif;font-size:1.4rem;font-weight:800;color:#7b5b34}.game-stats{display:flex;gap:8px;align-items:center}.game-stat{padding:5px 10px;border-radius:16px;background:#fff3cc;font-weight:700;font-size:.8rem}
 .creator-shell{display:grid;grid-template-columns:.9fr 1.1fr;gap:22px;max-width:980px;margin:0 auto 70px}.creator-preview{border:1.5px solid #d8bc91;border-radius:24px;background:#fff5dc;padding:14px;box-shadow:0 10px 25px rgba(92,65,38,.12)}.creator-preview img{display:block;width:100%;max-height:54vh;object-fit:contain;border-radius:18px}.creator-controls{border:1.5px solid #e3cfad;border-radius:24px;background:#fffaf0;padding:20px}.creator-section{padding:11px 0;border-bottom:1px dashed #e1cba9}.creator-section:last-child{border-bottom:0}.creator-label{font-weight:800;margin-bottom:7px;color:#76583a}.accessory-badge{text-align:center;font-size:2rem;padding:8px;margin-top:8px;border-radius:16px;background:#fff0c9}
 .st-key-avatar_preview{border:1.5px solid #d8bc91;border-radius:24px;background:#fff5dc;padding:14px;box-shadow:0 10px 25px rgba(92,65,38,.12)}.st-key-avatar_preview img{max-height:52vh;object-fit:contain;border-radius:18px}
@@ -53,6 +53,11 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 [data-testid="stForm"]{background:rgba(255,250,240,.94);border:1.5px solid #e0c8a2;border-radius:24px;padding:18px 20px;box-shadow:0 8px 24px rgba(94,68,38,.08)}
 [data-baseweb="input"]>div,[data-baseweb="select"]>div,[data-baseweb="textarea"]{background:#fff7e4!important;border-color:#d7bc91!important;border-radius:13px!important}
 [data-testid="stSlider"] [role="slider"]{background:var(--accent)!important}.stRadio [role="radiogroup"]{gap:12px}.stRadio label{background:#fff5da;border:1px solid #dfc59d;border-radius:14px;padding:7px 11px}
+[data-testid="stSlider"] [data-testid="stSliderTrackFill"]{background:var(--accent)!important}
+[data-baseweb="radio"] input:checked~div{color:var(--accent)!important}
+[data-baseweb="checkbox"] input:checked~div{background-color:var(--accent)!important;border-color:var(--accent)!important}
+[data-baseweb="tag"]{background-color:var(--accent-soft)!important;color:var(--ink)!important}
+.st-key-prior_experience_plain .stRadio label{background:transparent!important;border:0!important;border-radius:0!important;padding:3px 8px!important}
 .day-route{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:10px 0 16px}.day-node{width:48px;height:48px;border:2px solid #d1b687;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff5d8;font-weight:800;color:#9a7d57}.day-node.done{background:#88a557;color:white;border-color:#78964b}.day-node.now{background:#f5bd52;color:#65471f;border-color:#d89a35;transform:scale(1.12);box-shadow:0 0 0 5px rgba(245,189,82,.2)}
 .day-summary{display:grid;grid-template-columns:.75fr 1.5fr .75fr;gap:16px;max-width:1000px;margin:10px auto 18px}.summary-card{border:1.5px solid #dec7a2;border-radius:20px;background:#fffaf0;padding:18px;box-shadow:0 7px 18px rgba(94,68,38,.08)}.summary-card h4{margin:0 0 12px}.summary-line{display:flex;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px dashed #e5d3b6}.summary-line:last-child{border-bottom:0}.reward-number{font-size:2rem;color:var(--accent);font-weight:800;text-align:center}
 .scene-number{text-align:center; color:var(--accent); font-size:.78rem; font-weight:700; letter-spacing:.18em; margin-bottom:.45rem;}
@@ -83,7 +88,7 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 .game-card.recommended{ border-color:var(--accent); box-shadow:5px 6px 0 var(--accent-soft); }
 .game-card.locked{ opacity:.55; filter:grayscale(.4); }
 .game-badge{
-  display:inline-block; background:var(--accent-soft); color:#9e3f2d; font-size:.72rem; font-weight:700;
+  display:inline-block; background:var(--accent-soft); color:#735719; font-size:.72rem; font-weight:700;
   padding:3px 9px; border-radius:20px; margin-bottom:6px;
 }
 .game-muted{ color:var(--muted); font-size:.85rem; }
@@ -115,12 +120,22 @@ h1,h2,h3,h4,p,span,label,.stMarkdown{color:var(--ink); font-family:'Noto Sans SC
 .stButton>button:hover{transform:translateY(-2px);box-shadow:0 6px 14px rgba(115,91,72,.16)!important}
 .stButton>button:active{transform:translateY(1px) scale(.97);box-shadow:0 2px 5px rgba(115,91,72,.12)!important}
 .stButton>button:after{content:'';position:absolute;inset:50%;border-radius:50%;background:rgba(255,255,255,.45);transform:scale(0);opacity:0;transition:transform .35s ease,opacity .45s ease}.stButton>button:active:after{inset:-35%;transform:scale(1);opacity:1;transition:0s}
-button[kind="primary"]{background:var(--accent)!important;color:#fffaf5!important;border-color:#bd5942!important;box-shadow:3px 4px 0 #e8b9aa!important}
+button[kind="primary"]{background:var(--accent)!important;color:#5f4918!important;border-color:#d29a31!important;box-shadow:3px 4px 0 #e7cc8d!important}
 button[kind="secondary"]{background:#fffefa!important;border-color:#b5a99d!important;color:var(--ink)!important}
 .stProgress>div>div>div>div{background:var(--accent)}
 .st-key-intro_page{min-height:calc(100svh - 5.5rem);display:flex;align-items:center}
 .st-key-intro_page>[data-testid="stVerticalBlock"]{width:100%}
-button,button:hover,button:active,button:focus{box-shadow:none!important}
+.st-key-intro_create_action{position:fixed;z-index:10;left:50%;top:50svh;transform:translate(-50%,-50%);width:min(520px,78vw)}
+.st-key-intro_footer{position:fixed;z-index:10;left:50%;bottom:78px;transform:translateX(-50%);width:min(720px,calc(100vw - 40px))}
+.st-key-intro_footer>[data-testid="stVerticalBlock"]{gap:.35rem}
+.intro-note{text-align:center;color:var(--muted);font-size:.72rem;line-height:1.5;margin:12px auto 16px}
+.option-sheet-tile{width:100%;aspect-ratio:1;box-sizing:border-box;border:2px solid transparent;border-radius:15px;background-repeat:no-repeat;overflow:hidden}
+.option-sheet-tile.selected{border-color:var(--accent)}
+.option-sheet-label{height:1.4rem;display:flex;align-items:center;justify-content:center;text-align:center;white-space:nowrap;font-size:.72rem;font-weight:700;margin:5px 0 6px;color:var(--ink)}
+button,button:hover,button:active,button:focus,
+[data-testid="stButton"],[data-testid="stFormSubmitButton"],[data-testid^="baseButton-"]{
+  box-shadow:none!important;filter:none!important;text-shadow:none!important;
+}
 @media(min-width:900px) and (max-height:820px){.block-container{padding-top:.55rem}.roofscape{height:112px;margin-bottom:.4rem}.narrative-stage{min-height:57vh}.island-cover{min-height:68vh}.cover-copy{padding:18px 38px}.narrative-title{font-size:5.4rem}.scene-title{font-size:2.55rem}.scene-copy{margin-bottom:.45rem}.room-art{height:105px}.game-card{min-height:260px;padding:10px 13px}.game-card p{margin:.3rem 0!important;line-height:1.45!important}.hud-row{margin-bottom:7px}.story-box{padding:9px 14px}}
 @media(max-width:700px){.block-container{padding-top:.45rem}.island-cover{height:calc(100vh - .9rem);min-height:600px;border-radius:20px;background-position:center}.cover-copy{margin-top:12vh;width:96%}.narrative-title{font-size:clamp(3.6rem,18vw,5.2rem)}.narrative-subtitle{margin-top:16px;padding:8px 24px 10px;font-size:1.45rem}.st-key-cover_action{width:min(340px,78vw);margin:-39vh auto 0}.st-key-cover_action button{min-height:4.1rem!important;font-size:1.65rem!important}.st-key-cover_settings{left:12px;top:12px;width:98px}.narrative-stage{min-height:72vh}.roofscape{height:120px}.game-card{min-height:0}.progress-dots{bottom:8px}.creator-shell,.day-summary{grid-template-columns:1fr}.creator-preview img{max-height:45vh}.game-topbar{align-items:flex-start}.game-stats{flex-wrap:wrap;justify-content:flex-end}.day-summary{margin-bottom:80px}}
 @keyframes fadein{ from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:translateY(0);} }
@@ -158,8 +173,8 @@ button,button:hover,button:active,button:focus{box-shadow:none!important}
 html,body,#root{margin:0!important;padding:0!important}
 @media(max-width:700px){.stApp:has(.island-cover) .st-key-cover_action{top:64svh;width:min(340px,78vw);margin:0;transform:translateX(-50%)}.stApp:has(.island-cover) .cover-copy{margin-top:3vh}}
 .cover-copy{z-index:2}
-.journey-selection-map{position:relative;width:min(1000px,94vw);aspect-ratio:4/3;margin:0 auto 72px;border-radius:24px;background-position:center;background-size:cover;box-shadow:0 14px 36px rgba(62,85,74,.18);overflow:hidden}.journey-day-link{position:absolute;display:block;width:13%;height:9%;border-radius:14px;transform:translate(-50%,-50%);transition:filter .2s ease,transform .2s ease}.journey-day-link.active{z-index:3;border:3px solid #fff6b8;background:rgba(255,223,105,.16);box-shadow:0 0 0 6px rgba(255,226,111,.28),0 0 28px rgba(255,245,167,.9);animation:mapPulse 1.8s ease-in-out infinite;cursor:pointer}.journey-day-link.active:hover{transform:translate(-50%,-50%) scale(1.06)}.journey-day-link.locked{z-index:2;background:rgba(66,72,63,.48);border:2px solid rgba(75,70,60,.28);cursor:not-allowed}.journey-day-link.done{z-index:2;background:rgba(255,250,216,.08);border:2px solid rgba(255,255,235,.5)}.journey-day-link.d1{left:25.5%;top:31%}.journey-day-link.d2{left:72%;top:34%}.journey-day-link.d3{left:50.5%;top:51%}.journey-day-link.d4{left:20%;top:66%}.journey-day-link.d5{left:41%;top:83%}.journey-day-link.d6{left:79%;top:68%}@keyframes mapPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.16)}}
-@media(max-width:700px){.journey-selection-map{width:98vw;border-radius:12px}.journey-day-link{width:17%;height:11%;border-radius:8px}.journey-day-link.active{border-width:2px;box-shadow:0 0 0 3px rgba(255,226,111,.3),0 0 16px rgba(255,245,167,.8)}}
+.journey-selection-map{position:relative;width:min(1000px,94vw,calc((100svh - 96px)*1586/992));aspect-ratio:1586/992;margin:0 auto 72px;border-radius:24px;background-color:#9dd3ec;background-position:center;background-size:contain;background-repeat:no-repeat;box-shadow:0 14px 36px rgba(62,85,74,.18);overflow:hidden}.journey-day-link{position:absolute;display:block;width:10%;height:8%;border-radius:14px;transform:translate(-50%,-50%);transition:filter .2s ease,transform .2s ease}.journey-day-link.active{z-index:3;border:3px solid #fff6b8;background:rgba(255,223,105,.16);box-shadow:0 0 0 6px rgba(255,226,111,.28),0 0 28px rgba(255,245,167,.9);animation:mapPulse 1.8s ease-in-out infinite;cursor:pointer}.journey-day-link.active:hover{transform:translate(-50%,-50%) scale(1.06)}.journey-day-link.locked{z-index:2;background:rgba(66,72,63,.48);border:2px solid rgba(75,70,60,.28);cursor:not-allowed}.journey-day-link.done{z-index:2;background:rgba(255,250,216,.08);border:2px solid rgba(255,255,235,.5)}.journey-day-link.d1{left:32%;top:31%}.journey-day-link.d2{left:68%;top:31%}.journey-day-link.d3{left:51%;top:48%}.journey-day-link.d4{left:29%;top:61%}.journey-day-link.d5{left:44%;top:79%}.journey-day-link.d6{left:75%;top:64%}@keyframes mapPulse{0%,100%{filter:brightness(1)}50%{filter:brightness(1.16)}}
+@media(max-width:700px){.journey-map,.journey-selection-map{width:min(98vw,calc((100svh - 80px)*1586/992));border-radius:12px}.journey-day-link{width:12%;height:10%;border-radius:8px}.journey-day-link.active{border-width:2px;box-shadow:0 0 0 3px rgba(255,226,111,.3),0 0 16px rgba(255,245,167,.8)}}
 .journey-day-link.locked,.journey-day-link.done{pointer-events:none}
 </style>
 """
@@ -259,7 +274,7 @@ def title_scene() -> None:
 
 
 def journey_map() -> None:
-    artwork = _asset_data_url("assets/image2/rental-journey-map-v1.png")
+    artwork = _asset_data_url("assets/image2/rental-journey-map-user.png")
     st.markdown(
         f"<div class='journey-map' role='img' aria-label='六个租房社区组成的小岛地图' style=\"background-image:url('{artwork}')\"></div>",
         unsafe_allow_html=True,
@@ -268,7 +283,7 @@ def journey_map() -> None:
 
 def interactive_journey_map(active_day: int) -> None:
     """Clickable six-day island map; only the current day is enabled."""
-    artwork = _asset_data_url("assets/image2/rental-journey-map-v2.png")
+    artwork = _asset_data_url("assets/image2/rental-journey-map-user.png")
     links = []
     for day in range(1, 7):
         state = "active" if day == active_day else "done" if day < active_day else "locked"
@@ -306,17 +321,51 @@ def nest_room(theme: str) -> None:
     st.markdown(f"<div class='nest-room' style=\"background-image:url('{art}')\"></div>", unsafe_allow_html=True)
 
 
-HAIR_OPTIONS = {"short": "清爽短发", "long": "柔顺长发", "curly": "自然卷发", "twin": "元气双马尾"}
+HAIR_OPTIONS = {"short": "齐肩短发", "long": "侧分中长发", "twin": "双丸子头", "curly": "自然长卷发"}
 HAIR_COLOR_OPTIONS = {"black":"黑色", "brown":"棕色", "blonde":"金色"}
-OUTFIT_OPTIONS = {"tee": "白 T", "hoodie": "卫衣", "shirt": "衬衫", "jacket": "外套"}
+OUTFIT_OPTIONS = {"tee": "绿色背带裤", "hoodie": "绿色背带裙", "shirt": "粉色连衣裙", "jacket": "黄色外套"}
 BOTTOM_OPTIONS = {"jeans":"牛仔裤", "shorts":"短裤", "skirt":"长裙"}
 ACCESSORY_OPTIONS = {"bag": ("👜", "随身小包"), "cap": ("🧢", "遮阳帽"), "glasses": ("👓", "圆框眼镜"), "headphones": ("🎧", "通勤耳机")}
 
 
-def avatar_asset(hair: str, hair_color: str = "brown") -> str:
-    safe_hair = hair if hair in HAIR_OPTIONS else "short"
-    safe_color = hair_color if hair_color in HAIR_COLOR_OPTIONS else "brown"
-    return f"assets/image2/avatar-{safe_color}-{safe_hair}-v2.jpg"
+AVATAR_HAIR_FILES = {
+    "short": "bangs",
+    "long": "bob",
+    "twin": "buns",
+    "curly": "long",
+}
+AVATAR_OUTFIT_FILES = {
+    "tee": "shorts",
+    "hoodie": "dress",
+    "shirt": "pink",
+    "jacket": "yellow",
+}
+
+
+def avatar_asset(hair: str, outfit: str = "tee") -> str:
+    """Return the aligned full-body preview for one hair/outfit pairing."""
+    safe_hair = AVATAR_HAIR_FILES.get(hair, "bangs")
+    safe_outfit = AVATAR_OUTFIT_FILES.get(outfit, "shorts")
+    return f"assets/avatar_female/preview/{safe_hair}_{safe_outfit}.png"
+
+
+def _option_sheet_tile(sheet_path: str, index: int, label: str, selected: bool, zoom: float = 1.0) -> None:
+    """Render one quadrant from a 2x2 user-provided option sheet."""
+    artwork = _asset_data_url(sheet_path)
+    # Zoom each quadrant around its own center, so differently shaped artwork
+    # has one consistent perceived size without drifting out of alignment.
+    if zoom == 1:
+        near, far = 0.0, 100.0
+    else:
+        near = 50 * (1 - zoom) / (1 - 2 * zoom)
+        far = 100 - near
+    x = near if index % 2 == 0 else far
+    y = near if index < 2 else far
+    state = " selected" if selected else ""
+    st.markdown(
+        f"<div class='option-sheet-tile{state}' style=\"background-image:url('{artwork}');background-size:{200 * zoom:.2f}% {200 * zoom:.2f}%;background-position:{x:.2f}% {y:.2f}%\" role='img' aria-label='{label}'></div><div class='option-sheet-label'>{label}</div>",
+        unsafe_allow_html=True,
+    )
 
 
 def character_creator() -> dict:
@@ -330,34 +379,31 @@ def character_creator() -> dict:
     preview, controls = st.columns([.9, 1.1], gap="large")
     with preview:
         with st.container(key="avatar_preview"):
-            st.image(avatar_asset(st.session_state.avatar_hair, st.session_state.avatar_hair_color), use_container_width=True)
+            st.image(
+                avatar_asset(st.session_state.avatar_hair, st.session_state.avatar_outfit),
+                use_container_width=True,
+            )
     with controls:
         st.markdown("#### 创建你的角色")
         st.session_state.player_name = st.text_input("起个名字", value=st.session_state.player_name, max_chars=16)
         st.markdown("<div class='creator-label'>选择发型</div>", unsafe_allow_html=True)
         hair_cols = st.columns(4)
-        for col, (key, label) in zip(hair_cols, HAIR_OPTIONS.items()):
-            if col.button(label, key=f"hair_{key}", type="primary" if st.session_state.avatar_hair == key else "secondary", use_container_width=True):
-                st.session_state.avatar_hair = key
-                st.rerun()
-        st.markdown("<div class='creator-label'>选择发色</div>", unsafe_allow_html=True)
-        color_cols = st.columns(3)
-        for col, (key, label) in zip(color_cols, HAIR_COLOR_OPTIONS.items()):
-            if col.button(label, key=f"hair_color_{key}", type="primary" if st.session_state.avatar_hair_color == key else "secondary", use_container_width=True):
-                st.session_state.avatar_hair_color = key
-                st.rerun()
+        hair_zoom = [1.0, 1.04, 1.17, 1.02]
+        for index, (col, (key, label)) in enumerate(zip(hair_cols, HAIR_OPTIONS.items())):
+            with col:
+                _option_sheet_tile("assets/image2/hair-options-sheet-v2.png", index, label, st.session_state.avatar_hair == key, hair_zoom[index])
+                if st.button("已选择" if st.session_state.avatar_hair == key else "选择", key=f"hair_{key}", type="primary" if st.session_state.avatar_hair == key else "secondary", use_container_width=True):
+                    st.session_state.avatar_hair = key
+                    st.rerun()
         st.markdown("<div class='creator-label'>选择服装</div>", unsafe_allow_html=True)
         outfit_cols = st.columns(4)
-        for col, (key, label) in zip(outfit_cols, OUTFIT_OPTIONS.items()):
-            if col.button(label, key=f"outfit_{key}", type="primary" if st.session_state.avatar_outfit == key else "secondary", use_container_width=True):
-                st.session_state.avatar_outfit = key
-                st.rerun()
-        st.markdown("<div class='creator-label'>选择下装</div>", unsafe_allow_html=True)
-        bottom_cols = st.columns(3)
-        for col, (key, label) in zip(bottom_cols, BOTTOM_OPTIONS.items()):
-            if col.button(label, key=f"bottom_{key}", type="primary" if st.session_state.avatar_bottom == key else "secondary", use_container_width=True):
-                st.session_state.avatar_bottom = key
-                st.rerun()
+        outfit_zoom = [1.04, 1.0, 1.05, 1.0]
+        for index, (col, (key, label)) in enumerate(zip(outfit_cols, OUTFIT_OPTIONS.items())):
+            with col:
+                _option_sheet_tile("assets/image2/outfit-options-sheet-v2.png", index, label, st.session_state.avatar_outfit == key, outfit_zoom[index])
+                if st.button("已选择" if st.session_state.avatar_outfit == key else "选择", key=f"outfit_{key}", type="primary" if st.session_state.avatar_outfit == key else "secondary", use_container_width=True):
+                    st.session_state.avatar_outfit = key
+                    st.rerun()
     return {
         "hair": st.session_state.avatar_hair,
         "hair_color": st.session_state.avatar_hair_color,
@@ -407,7 +453,7 @@ def day_summary_card(round_number: int, row: dict, coins_earned: int) -> None:
 def character_identity_card(hair: str, outfit: str, accessory: str, name: str, coins: int, badges: list[dict], group_label: str, hair_color: str = "brown") -> None:
     left, right = st.columns([.35, .65])
     with left:
-        st.image(avatar_asset(hair, hair_color), use_container_width=True)
+        st.image(avatar_asset(hair, outfit), use_container_width=True)
     with right:
         icon, accessory_name = ACCESSORY_OPTIONS.get(accessory, ("👜", "随身小包"))
         st.markdown(f"### {icon} {name}")
